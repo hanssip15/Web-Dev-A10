@@ -129,7 +129,8 @@ body {
 }
 
 .review-form {
-    margin-top: 20px;
+    margin-top: 10px;
+    width: 50%;
 }
 
 .review-input {
