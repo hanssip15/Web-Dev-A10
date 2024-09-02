@@ -45,8 +45,8 @@ function MovieDetailPage() {
   return (
     <div>
       <header>
-        <logo>Movie Review</logo>
-        <menu>Menu</menu>
+      <a href="http://localhost:3000/" className="logo">Movie Review</a>
+        <listmenu>Menu</listmenu>
         <div className="search-container">
           <input type="text" placeholder="Search Movie" className="search-input"/>
           <button type="submit" className="search-button">Search</button>

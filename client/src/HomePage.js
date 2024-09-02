@@ -18,11 +18,11 @@ function HomePage() {
     <div>
       <link rel="stylesheet" href="/css/style.css"></link>
       <header>
-        <logo>Movie Review</logo>
-        <menu>Menu</menu>
-        <div class="search-container">
-            <input type="text" placeholder="Search Movie" class="search-input"/>
-            <button type="submit" class="search-button">Search</button>
+        <a href="http://localhost:3000/" className="logo">Movie Review</a>
+        <listmenu>Menu</listmenu>
+        <div className="search-container">
+          <input type="text" placeholder="Search Movie" className="search-input"/>
+          <button type="submit" className="search-button">Search</button>
         </div>
         <watchlist>Watchlist</watchlist>
         <signin>Sign In</signin>
@@ -32,15 +32,6 @@ function HomePage() {
         <div class="image-container">
           <img src="/img/film1.jpg" alt="Boboiboy Movie" class="styled-image"/>
           <div class="gradient-overlay"></div>
-          <div class="text-film">
-              <filmtitle>Lorem</filmtitle>
-              <subtitle>Watch Lorem Trailer</subtitle>
-          </div>
-          <div class="play-button-container">
-            <button class="play-button">
-              <span class="play-icon">▶</span>
-            </button>
-          </div>
         </div>
       </body>
       <div class="next-film">
@@ -48,7 +39,6 @@ function HomePage() {
           <ul>
           {movies.map((movie, index) => (
             <li key={index}>
-            <div class="square">
               <div class="item">
               <img src={`/img/poster/${movie.image}.jpg`} alt={movie.name} className="styled-image-preview"/>
               <Link to={`/movie/${encodeURIComponent(movie.name)}`}>
@@ -57,9 +47,8 @@ function HomePage() {
                     <span class="play-icon-mini">▶</span>
                   </button>
                 </div>
-              </Link> - {movie.genre}
+              </Link>
               </div>
-            </div>
             </li>
            ))}
           </ul>
