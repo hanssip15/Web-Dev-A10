@@ -4,15 +4,14 @@ logo {
     color: #ffffff;
     text-align: left;
     font-size: small;
-    margin-left: 30px;
+    margin-left: 20px;
     font-weight: bold;
 }
 upnext {
     color: #eada28;
     text-align: left;
     font-size: 20px;
-    margin-top: 10px;
-    margin-left: 10px;
+    margin-top: 45px;
     font-weight: bold;
 }
 menu {
@@ -47,7 +46,7 @@ header {
     background-color: #1a1a1a;
     color: #ffffff;
     font-family: Arial, sans-serif;
-    padding: 7px 7px;
+    padding: 7px 35px;
     display: flex;
     align-items: center;
 }
@@ -55,6 +54,7 @@ body {
     background-color: #000000;
     color: #ffffff;
     font-family: Arial, sans-serif;
+    display: flex;
 }   
 
 .search-container {
@@ -89,13 +89,12 @@ body {
     background-color: #e5533d;
 }
 .search-input, .search-button {
-    box-sizing: border-box; /* Pastikan padding termasuk dalam width/height */
+    box-sizing: border-box; 
   }
 
 /* Body CSS */
 
 .image-container {
-    display: flex;
     position: relative;
     justify-content: left;
     margin-left: -10px;
@@ -105,11 +104,11 @@ body {
 }
 
 .styled-image {
-    width: 850px; /* Adjust the width */
-    height: 550px; /* Maintain aspect ratio */
+    width: 850px; 
+    height: 550px; 
     border: none;
-    border-radius: 15px; /* Rounded corners */
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3); /* Shadow for depth */
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
     display: block;
 }
 .gradient-overlay {
@@ -117,7 +116,7 @@ body {
     bottom: 0; 
     left: 0;
     width: 100%;
-    height: 50%; 
+    height: 120%; 
     background: linear-gradient(to bottom, rgba(0, 0, 0, 0), rgb(0, 0, 0)); 
     pointer-events: none; 
 }
@@ -126,7 +125,111 @@ body {
     flex-direction: column;
 }
 .square {
-    width: 100px; /* Lebar persegi */
-    height: 100px; /* Tinggi persegi, sama dengan lebar */
-    background-color: #ffffff; /* Warna latar belakang persegi */
+    margin-top: 20px;
+    width: 375px; 
+    height: 535px; 
+    background-color: #0f0f0f;
+    background: linear-gradient(to top, rgba(0, 0, 0, 0), rgb(17, 17, 17)); 
+    
+}
+.styled-image-preview {
+    margin-top: 20px;
+    margin-left: 17px;
+    width: 100px; 
+    height: 150px; 
+    border: none;
+    border-radius: 15px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
+    display: block;
+}
+.item {
+    display: flex;
+}
+p {
+    color: #ffffff;
+    text-align: left;
+    margin-top: 75px;
+    margin-left: 0px;
+}
+browse {
+    color: #ffffff;
+    text-align: left;
+    margin-left: 17px;
+    font-weight: bold;
+    font-size: 20px;
+}
+.play-button-container {
+    display: flex;
+    margin-left: 190px;
+    align-items: center;
+}
+.play-button {
+    position: absolute;
+    background-color: #000000; /* Warna latar belakang tombol */
+    outline: 2px solid rgb(255, 255, 255);
+    border-radius: 50%; /* Membuat tombol berbentuk bulat */
+    width: 65px;
+    height: 65px;
+    justify-content: center;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Menambahkan bayangan untuk efek 3D */
+    transition: background-color 0.3s ease, transform 0.3s ease; /* Animasi saat hover */
+}
+.play-button:hover {
+    background-color: #000000;
+    outline: 2px solid rgb(255, 234, 1);
+}
+.play-icon {
+    color: white;
+    font-size: 32px;
+    margin-left: 5px;
+}
+.play-button:hover .play-icon {
+    color: yellow; /* Warna ikon saat tombol dihover */
+}
+.text-film {
+    position: absolute;
+    margin-left: 190px;
+    margin-top: -30px;
+}
+filmtitle {
+    color: #ffffff;
+    text-align: left;
+    margin-left: 90px;
+    font-size: 30px;
+    display: flex;
+}
+subtitle {
+    color: #878787;
+    text-align: left;
+    margin-left: 90px;
+    font-size: 20px;
+}
+.play-button-container-mini {
+    display: flex;
+    margin-top: 25px;
+    margin-left: 15px;
+}
+.play-button-mini {
+    position: absolute;
+    background-color: #000000; /* Warna latar belakang tombol */
+    outline: 2px solid rgb(255, 255, 255);
+    border-radius: 50%; /* Membuat tombol berbentuk bulat */
+    width: 35px;
+    height: 35px;
+    cursor: pointer;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1); /* Menambahkan bayangan untuk efek 3D */
+    transition: background-color 0.3s ease, transform 0.3s ease; /* Animasi saat hover */
+}
+.play-button-mini:hover {
+    background-color: #000000;
+    outline: 2px solid rgb(255, 234, 1);
+}
+.play-icon-mini {
+    color: white;
+    font-size: 16px;
+    margin-left: 5px;
+}
+.play-button-mini:hover .play-icon-mini {
+    color: yellow; /* Warna ikon saat tombol dihover */
 }
