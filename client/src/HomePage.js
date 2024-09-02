@@ -1,4 +1,19 @@
+import React, { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
+import axios from 'axios';
+
 function HomePage() {
+  const [movies, setMovies] = useState([]);
+
+  useEffect(() => {
+    const fetchData = async () => {
+      const movieRes = await axios.get('/api/movies');
+      setMovies(movieRes.data);
+    };
+
+    fetchData();
+  }, []);
+
   return (
     <div>
       <link rel="stylesheet" href="/css/style.css"></link>
@@ -27,40 +42,29 @@ function HomePage() {
             </button>
           </div>
         </div>
-        <div class="next-film">
-          <upnext>Up next</upnext>
-          <div class="square">
-            <div class="item">
-            <img src="/img/film1.jpeg" alt="Boboiboy Mv" class="styled-image-preview"/>
-            <div class="play-button-container-mini">
-              <button class="play-button-mini">
-               <span class="play-icon-mini">▶</span>
-              </button>
-            </div>
-            <p>Lorem Ipsum Dolor</p>  
-            </div>  
-            <div class="item">
-            <img src="/img/film1.jpeg" alt="Boboiboy Mv" class="styled-image-preview"/>
-            <div class="play-button-container-mini">
-              <button class="play-button-mini">
-               <span class="play-icon-mini">▶</span>
-              </button>
-            </div>
-            <p>Lorem Ipsum Dolor</p>  
-            </div>
-            <div class="item">
-            <img src="/img/film1.jpeg" alt="Boboiboy Mv" class="styled-image-preview"/>
-            <div class="play-button-container-mini">
-              <button class="play-button-mini">
-               <span class="play-icon-mini">▶</span>
-              </button>
-            </div>
-            <p>Lorem Ipsum Dolor</p>
-            </div>
-          </div>
-          <browse>Browse trailers</browse>
-        </div>
       </body>
+      <div class="next-film">
+          <upnext>Up next</upnext>
+          <ul>
+          {movies.map((movie, index) => (
+            <li key={index}>
+            <div class="square">
+              <div class="item">
+              <img src={`/img/poster/${movie.image}.jpg`} alt={movie.name} className="styled-image-preview"/>
+              <Link to={`/movie/${encodeURIComponent(movie.name)}`}>
+                <div class="play-button-container-mini">
+                  <button class="play-button-mini">
+                    <span class="play-icon-mini">▶</span>
+                  </button>
+                </div>
+              </Link> - {movie.genre}
+              </div>
+            </div>
+            </li>
+           ))}
+          </ul>
+        </div>
+      <browse>Browse trailers</browse>
     </div>
   );
 }
