@@ -7,8 +7,12 @@ function HomePage() {
 
   useEffect(() => {
     const fetchData = async () => {
-      const movieRes = await axios.get('/api/movies');
-      setMovies(movieRes.data);
+      try {
+        const movieRes = await axios.get('/api/movies');
+        setMovies(movieRes.data); // Data dari server (MongoDB)
+      } catch (error) {
+        console.error('Error fetching movies:', error);
+      }
     };
 
     fetchData();
@@ -16,13 +20,12 @@ function HomePage() {
 
   return (
     <div>
-
       <header>
         <logo>Movie Review</logo>
         <menu>Menu</menu>
-        <div class="search-container">
-            <input type="text" placeholder="Search Movie" class="search-input"/>
-            <button type="submit" class="search-button">Search</button>
+        <div className="search-container">
+          <input type="text" placeholder="Search Movie" className="search-input" />
+          <button type="submit" className="search-button">Search</button>
         </div>
         <watchlist>Watchlist</watchlist>
         <signin>Sign In</signin>
@@ -30,22 +33,23 @@ function HomePage() {
       </header>
 
       <body>
-        <div class="image-container">
-          <img src="/img/film1.jpg" alt="Boboiboy Movie" class="styled-image"/>
-          <div class="gradient-overlay"></div>
-          <div class="next-film"></div>
-            <upnext>Up next</upnext>
-            <div class="square"></div> 
+        <div className="image-container">
+          <img src="/img/film1.jpg" alt="Boboiboy Movie" className="styled-image" />
+          <div className="gradient-overlay"></div>
+          <div className="next-film"></div>
+          <upnext>Up next</upnext>
+          <div className="square"></div> 
         </div>
- 
       </body>
+      
       <h1>Movie Reviews</h1>
       <link rel="stylesheet" href="/css/style.css"></link>
+
       <h2>Movies</h2>
       <ul>
         {movies.map((movie, index) => (
           <li key={index}>
-            <Link to={`/movie/${encodeURIComponent(movie.name)}`}>{movie.name}</Link> - {movie.genre}
+            <Link to={`/movie/${encodeURIComponent(movie.title)}`}>{movie.title}</Link> - {movie.genre.join(', ')}
           </li>
         ))}
       </ul>
