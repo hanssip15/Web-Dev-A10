@@ -1,9 +1,19 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
 
 function HomePage() {
-  const [movies, setMovies] = useState([]);
+  const [setMovies] = useState([]);
+  const [searchQuery, setSearchQuery] = useState('');
+  const navigate = useNavigate();
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      // Redirect ke halaman SearchFilter dengan query string
+      navigate(`/search?query=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   useEffect(() => {
     const fetchData = async () => {
@@ -21,11 +31,17 @@ function HomePage() {
   return (
     <div>
       <header>
-        <logo>Movie Review</logo>
+        <logo> <Link to="/">Movie Review</Link></logo>
         <menu>Menu</menu>
         <div className="search-container">
-          <input type="text" placeholder="Search Movie" className="search-input" />
-          <button type="submit" className="search-button">Search</button>
+          <input
+            type="text"
+            placeholder="Search Movie"
+            className="search-input"
+            value={searchQuery}
+            onChange={(e) => setSearchQuery(e.target.value)}
+          />
+          <button onClick={handleSearch} className="search-button">Search</button>
         </div>
         <watchlist>Watchlist</watchlist>
         <signin>Sign In</signin>
@@ -44,15 +60,6 @@ function HomePage() {
       
       <h1>Movie Reviews</h1>
       <link rel="stylesheet" href="/css/style.css"></link>
-
-      <h2>Movies</h2>
-      <ul>
-        {movies.map((movie, index) => (
-          <li key={index}>
-            <Link to={`/movie/${encodeURIComponent(movie.title)}`}>{movie.title}</Link> - {movie.genre.join(', ')}
-          </li>
-        ))}
-      </ul>
     </div>
   );
 }

@@ -112,6 +112,8 @@ body {
 
 /* CSS MovieDetailPage */
 .image-container {
+    width: 200px;
+    height: 300px;
     display: flex;
     position: relative;
     justify-content: left;

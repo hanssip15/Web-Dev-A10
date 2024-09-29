@@ -2,7 +2,8 @@ import React from 'react';
 import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
 import HomePage from './HomePage';
 import MovieDetailPage from './MovieDetailPage';
-import Login from './Login'; // Import halaman login
+import Login from './Login';
+import SearchFilter from './SearchFilter';
 
 function App() {
   return (
@@ -16,6 +17,9 @@ function App() {
 
         {/* Route untuk halaman Login */}
         <Route path="/login" element={<Login />} />
+
+        {/* Route untuk halaman Search */}
+        <Route path="/search" element={<SearchFilter />} />
       </Routes>
     </Router>
   );

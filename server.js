@@ -19,6 +19,7 @@ const movieSchema = new mongoose.Schema({
   image: String,
   country: String,
   genre: [String],
+  actor: [String],
   releaseYear: Number,
   synopsis: String,
   averageRating: Number,
@@ -33,11 +34,26 @@ const movieSchema = new mongoose.Schema({
 
 const Movie = mongoose.model('Movie', movieSchema);
 
-// Endpoint untuk mendapatkan semua film dari MongoDB
+// Endpoint untuk mendapatkan semua film atau berdasarkan pencarian, genre, dan negara
 app.get('/api/movies', async (req, res) => {
+  const { search, genre, country } = req.query;
+  let query = {};
+
+  if (search) {
+    query.title = { $regex: search, $options: 'i' }; // Pencarian berdasarkan judul, tidak case-sensitive
+  }
+
+  if (genre) {
+    query.genre = genre; // Filter berdasarkan genre
+  }
+
+  if (country) {
+    query.country = country; // Filter berdasarkan negara
+  }
+
   try {
-    const movies = await Movie.find(); // Ambil semua data film
-    res.json(movies); // Kirim data film dalam bentuk JSON
+    const movies = await Movie.find(query); // Cari film berdasarkan query
+    res.json(movies);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching movies', error: err });
   }
