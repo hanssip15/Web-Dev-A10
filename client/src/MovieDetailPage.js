@@ -1,14 +1,16 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
+import { useParams, useNavigate, Link } from 'react-router-dom';
 import axios from 'axios';
 import './MovieDetailPage.css';
 
 function MovieDetailPage() {
-  const { title } = useParams();  // "name" di sini sebenarnya merujuk pada title film
+  const { title } = useParams();
   const [movie, setMovie] = useState(null);
   const [rating, setRating] = useState('');
   const [comment, setComment] = useState('');
-  const [errorMessage, setErrorMessage] = useState(''); // Tambahkan state untuk pesan kesalahan
+  const [errorMessage, setErrorMessage] = useState('');
+  const [searchQuery, setSearchQuery] = useState(''); // State untuk search query
+  const navigate = useNavigate(); // Hook untuk navigasi
 
   useEffect(() => {
     const fetchMovie = async () => {
@@ -22,6 +24,12 @@ function MovieDetailPage() {
 
     fetchMovie();
   }, [title]);
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/search?query=${encodeURIComponent(searchQuery.trim())}`);
+    }
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -49,15 +57,21 @@ function MovieDetailPage() {
   return (
     <div>
       <header>
-        <logo>Movie Review</logo>
-        <menu>Menu</menu>
-        <div className="search-container">
-          <input type="text" placeholder="Search Movie" className="search-input"/>
-          <button type="submit" className="search-button">Search</button>
-        </div>
-        <watchlist>Watchlist</watchlist>
-        <signin>Sign In</signin>
-        <language>EN</language>
+          <logo> <Link to="/">Movie Review</Link></logo>
+          <menu>Menu</menu>
+          <div className="search-container">
+            <input
+              type="text"
+              placeholder="Search Movie"
+              className="search-input"
+              value={searchQuery} // Tied to state
+              onChange={(e) => setSearchQuery(e.target.value)} // Update state saat user mengetik
+            />
+            <button onClick={handleSearch} className="search-button">Search</button> {/* Event handler untuk search */}
+          </div>
+          <watchlist>Watchlist</watchlist>
+          <signin>Sign In</signin>
+          <language>EN</language>
       </header>
 
       <div className="movie-detail-container">
@@ -67,7 +81,7 @@ function MovieDetailPage() {
         </div>
         <p><strong>Country:</strong> {movie.country}</p>
         <p><strong>Genre:</strong> {movie.genre.join(', ')}</p>
-        <p><strong>Actors:</strong> {movie.actors ? movie.actors.join(', ') : 'Unknown'}</p>
+        <p><strong>Actors:</strong> {movie.actor ? movie.actor.join(', ') : 'Unknown'}</p>
         <p><strong>Release Year:</strong> {movie.releaseYear}</p>
         <p><strong>Synopsis:</strong> {movie.synopsis}</p>
         
