@@ -61,6 +61,19 @@ const reviewSchema = new mongoose.Schema({
 
 const Review = mongoose.model('Review', reviewSchema);
 
+// Movie Request Schema (untuk request film baru)
+const movieRequestSchema = new mongoose.Schema({
+  title: { type: String, required: true },
+  description: { type: String, required: true },
+  genre: [String],
+  year: Number,
+  status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
+  userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true }, // Mengacu pada User yang mengajukan
+  requestDate: { type: Date, default: Date.now }
+});
+
+const MovieRequest = mongoose.model('MovieRequest', movieRequestSchema);
+
 // ** Middleware untuk autentikasi admin dan user **
 const authenticateToken = (req, res, next) => {
   const token = req.headers['authorization'];
@@ -74,6 +87,66 @@ const authenticateToken = (req, res, next) => {
     next();
   });
 };
+
+// Middleware khusus untuk admin
+const authenticateAdmin = (req, res, next) => {
+  if (req.user.role !== 'admin') {
+    return res.status(403).json({ message: 'Access denied' });
+  }
+  next();
+};
+
+// Endpoint untuk admin melihat semua request movie
+app.get('/api/movie-requests', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    const requests = await MovieRequest.find().populate('userId', 'username name');
+    res.json(requests);
+  } catch (err) {
+    res.status(500).json({ message: 'Error fetching movie requests', error: err });
+  }
+});
+
+// ** Endpoint untuk permintaan film baru (user yang login) **
+app.post('/api/movie-requests', authenticateToken, async (req, res) => {
+  const { title, description, genre, year } = req.body;
+
+  try {
+    // Membuat objek request film baru dengan userId dari token JWT
+    const newRequest = new MovieRequest({
+      title,
+      description,
+      genre,
+      year,
+      userId: req.user.userId // Mengambil userId dari token
+    });
+
+    // Menyimpan request ke database
+    await newRequest.save();
+
+    res.status(201).json({ message: 'Movie request submitted successfully!' });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to submit movie request', error: err });
+  }
+});
+
+// ** Endpoint untuk admin menyetujui atau menolak request film **
+app.put('/api/movie-requests/:id', authenticateToken, authenticateAdmin, async (req, res) => {
+  const { status } = req.body;
+
+  try {
+    const request = await MovieRequest.findById(req.params.id);
+    if (!request) {
+      return res.status(404).json({ message: 'Movie request not found' });
+    }
+
+    request.status = status; // Update status (approved/rejected)
+    await request.save();
+
+    res.json({ message: `Movie request ${status} successfully.` });
+  } catch (err) {
+    res.status(500).json({ message: 'Failed to update movie request', error: err });
+  }
+});
 
 // ** Routes untuk Film **
 
@@ -186,8 +259,9 @@ app.post('/api/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid username or password' });
 
+    // Tambahkan 'role' ke dalam payload token
     const token = jwt.sign(
-      { userId: user._id, username: user.username, name: user.name },
+      { userId: user._id, username: user.username, name: user.name, role: user.role }, // Pastikan role ditambahkan di sini
       'secretkey',
       { expiresIn: '1h' }
     );

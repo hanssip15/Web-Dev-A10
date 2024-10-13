@@ -1,10 +1,13 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
+
   
 function HomePage() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   const handleSearch = () => {
@@ -17,25 +20,43 @@ function HomePage() {
 
   // Cek status login saat komponen dimuat
   useEffect(() => {
-    const token = localStorage.getItem('token'); // Cek token di localStorage
+    const token = localStorage.getItem('token');
     if (token) {
-      setIsLoggedIn(true); // Jika token ada, pengguna sudah login
+      const decodedToken = jwtDecode(token);
+      setIsLoggedIn(true);
+      if (decodedToken.role === 'admin') {
+        setIsAdmin(true); // Jika role admin, set isAdmin menjadi true
+        console.log(decodedToken);
+      }
     } else {
-      setIsLoggedIn(false); // Jika tidak ada token, pengguna belum login
+      setIsLoggedIn(false);
+      setIsAdmin(false);
     }
   }, []);
 
   const handleSignOut = () => {
-    localStorage.removeItem('token'); // Hapus token dari localStorage
-    setIsLoggedIn(false); // Set status menjadi logout
-    window.location.href = '/'; // Redirect ke halaman utama
+    localStorage.removeItem('token');
+    setIsLoggedIn(false);
+    setIsAdmin(false);
+    window.location.href = '/';
   };
 
   return (
     <div>
       <header>
         <logo> <Link to="/">Movie Review</Link></logo>
-        <menu>Menu</menu>
+        <div className="dropdown">
+          <button className="btn btn-danger dropdown-toggle" type="button" id="menuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            Menu
+          </button>
+          <ul className="dropdown-menu" aria-labelledby="menuDropdown">
+            <li><Link className="dropdown-item" to="/trending">Trending Movies</Link></li>
+            <li><Link className="dropdown-item" to="/new-releases">New Releases</Link></li>
+            {isAdmin && (
+              <li><Link className="dropdown-item" to="/admin/movie-requests">Manage Movie Requests</Link></li>
+            )}
+          </ul>
+        </div>
         <div className="search-container">
           <input
             type="text"
@@ -58,16 +79,23 @@ function HomePage() {
       </header>
 
       <body>
-        <div className="image-container">
-          <img src="/img/film1.jpg" alt="Boboiboy Movie" className="styled-image" />
-          <div className="gradient-overlay"></div>
-          <div className="next-film"></div>
-          <upnext>Up next</upnext>
-          <div className="square"></div> 
-        </div>
+        <h1>Movie Reviews</h1>
+          <div className="image-container">
+            <img src="/img/film1.jpg" alt="Boboiboy Movie" className="styled-image" />
+            <div className="gradient-overlay"></div>
+            <div className="next-film"></div>
+            <upnext>Up next</upnext>
+            <div className="square"></div> 
+          </div>
+          {isLoggedIn && (
+            <div className="request-movie-container">
+              <Link to="/request-movie" className="request-movie-button">
+                Request a New Movie
+              </Link>
+            </div>
+          )}
       </body>
       
-      <h1>Movie Reviews</h1>
       <link rel="stylesheet" href="/css/style.css"></link>
     </div>
   );

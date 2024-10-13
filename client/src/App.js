@@ -4,6 +4,8 @@ import HomePage from './HomePage';
 import MovieDetailPage from './MovieDetailPage';
 import Login from './LoginRegister';
 import SearchFilter from './SearchFilter';
+import MovieRequestForm from './MovieRequestForm';
+import MovieRequestAdmin from './MovieRequestAdmin';
 
 function App() {
   return (
@@ -20,6 +22,12 @@ function App() {
 
         {/* Route untuk halaman Search */}
         <Route path="/search" element={<SearchFilter />} />
+
+        {/* Route untuk halaman Request Movie */}
+        <Route path="/request-movie" element={<MovieRequestForm />} />
+      
+        {/* Route untuk halaman admin */}
+        <Route path="/admin/movie-requests" element={<MovieRequestAdmin />} /> 
       </Routes>
     </Router>
   );
