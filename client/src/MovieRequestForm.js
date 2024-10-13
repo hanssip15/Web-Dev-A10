@@ -1,100 +1,74 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import axios from 'axios';
-import { useNavigate } from 'react-router-dom';
 
-const MovieRequestForm = () => {
-  const [title, setTitle] = useState('');
-  const [description, setDescription] = useState('');
-  const [genre, setGenre] = useState('');
-  const [year, setYear] = useState('');
-  const [successMessage, setSuccessMessage] = useState('');
-  const [errorMessage, setErrorMessage] = useState('');
-  const [isLoggedIn, setIsLoggedIn] = useState(false);
-  const navigate = useNavigate();
-
-  useEffect(() => {
-    // Cek apakah pengguna sudah login dengan melihat token
-    const token = localStorage.getItem('token');
-    if (token) {
-      setIsLoggedIn(true);
-    } else {
-      setIsLoggedIn(false);
-    }
-  }, []);
+function MovieRequestForm() {
+  const [formData, setFormData] = useState({
+    title: '',
+    description: '',
+    genre: '',
+    year: ''
+  });
+  const [message, setMessage] = useState('');
 
   const handleSubmit = async (e) => {
     e.preventDefault();
 
-    if (!isLoggedIn) {
-      setErrorMessage('You must be logged in to request a movie.');
-      return;
-    }
+    const token = localStorage.getItem('token');
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
 
     try {
-      const token = localStorage.getItem('token');
-      const config = {
-        headers: {
-          'Authorization': `Bearer ${token}`,
-        },
-      };
-
-      const requestData = {
-        title,
-        description,
-        genre: genre.split(',').map(g => g.trim()), // Split genre by comma
-        year,
-      };
-
-      // Kirim request film ke backend
-      await axios.post('/api/movie-requests', requestData, config);
-      setSuccessMessage('Movie request submitted successfully!');
-      setTitle('');
-      setDescription('');
-      setGenre('');
-      setYear('');
-      setErrorMessage('');
+      const response = await axios.post('/api/movie-requests', formData, config);
+      setMessage(response.data.message);
     } catch (error) {
-      setErrorMessage('Failed to submit movie request. Please try again.');
+      console.error('Error submitting movie request', error);
+      setMessage('Failed to submit request');
     }
   };
 
-  // Jika belum login, tampilkan pesan untuk login terlebih dahulu
-  if (!isLoggedIn) {
-    return (
-      <div>
-        <h2>You must be logged in to request a movie</h2>
-        <button onClick={() => navigate('/login')}>Login</button>
-      </div>
-    );
-  }
-
-  // Form pengajuan request film untuk pengguna yang sudah login
   return (
     <div>
-      <h2>Request a New Movie</h2>
+      <h1>Request a New Movie</h1>
       <form onSubmit={handleSubmit}>
-        <div>
-          <label>Title</label>
-          <input type="text" value={title} onChange={(e) => setTitle(e.target.value)} required />
-        </div>
-        <div>
-          <label>Description</label>
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} required />
-        </div>
-        <div>
-          <label>Genre (separated by commas)</label>
-          <input type="text" value={genre} onChange={(e) => setGenre(e.target.value)} required />
-        </div>
-        <div>
-          <label>Year</label>
-          <input type="number" value={year} onChange={(e) => setYear(e.target.value)} />
-        </div>
-        <button type="submit">Submit Request</button>
+        <label>
+          Title:
+          <input
+            type="text"
+            value={formData.title}
+            onChange={(e) => setFormData({ ...formData, title: e.target.value })}
+          />
+        </label>
+        <label>
+          Description:
+          <textarea
+            value={formData.description}
+            onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+          ></textarea>
+        </label>
+        <label>
+          Genre (comma separated):
+          <input
+            type="text"
+            value={formData.genre}
+            onChange={(e) => setFormData({ ...formData, genre: e.target.value.split(',') })}
+          />
+        </label>
+        <label>
+          Release Year:
+          <input
+            type="number"
+            value={formData.year}
+            onChange={(e) => setFormData({ ...formData, year: e.target.value })}
+          />
+        </label>
+        <button type="submit">Submit</button>
       </form>
-      {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
-      {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
+      {message && <p>{message}</p>}
     </div>
   );
-};
+}
 
 export default MovieRequestForm;
