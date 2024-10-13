@@ -43,10 +43,10 @@ const LoginRegister = () => {
   };
 
   return (
-    <div className="auth-container">
+    <div className="login-container">
       {isRegistering ? (
         // Form registrasi
-        <form className="auth-form" onSubmit={handleRegisterSubmit}>
+        <form className="login-form" onSubmit={handleRegisterSubmit}>
           <h2>Register</h2>
           {error && <p className="error">{error}</p>}
           {successMessage && <p className="success">{successMessage}</p>}
@@ -90,7 +90,7 @@ const LoginRegister = () => {
         </form>
       ) : (
         // Form login
-        <form className="auth-form" onSubmit={handleLoginSubmit}>
+        <form className="login-form" onSubmit={handleLoginSubmit}>
           <h2>Login</h2>
           {error && <p className="error">{error}</p>}
           <div className="form-group">
