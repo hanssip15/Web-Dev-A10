@@ -55,6 +55,7 @@ function HomePage() {
             {isAdmin && (
               <li><Link className="dropdown-item" to="/admin/movie-requests">Manage Movie Requests</Link></li>
             )}
+            <Link to="/request-movie">Request a Movie</Link>
           </ul>
         </div>
         <div className="search-container">

@@ -88,7 +88,6 @@ const authenticateToken = (req, res, next) => {
   });
 };
 
-// Middleware khusus untuk admin
 const authenticateAdmin = (req, res, next) => {
   if (req.user.role !== 'admin') {
     return res.status(403).json({ message: 'Access denied' });
@@ -96,10 +95,10 @@ const authenticateAdmin = (req, res, next) => {
   next();
 };
 
-// Endpoint untuk admin melihat semua request movie
+// Endpoint untuk admin melihat semua request movie dengan status 'pending'
 app.get('/api/movie-requests', authenticateToken, authenticateAdmin, async (req, res) => {
   try {
-    const requests = await MovieRequest.find().populate('userId', 'username name');
+    const requests = await MovieRequest.find({ status: 'pending' }).populate('userId', 'username name');
     res.json(requests);
   } catch (err) {
     res.status(500).json({ message: 'Error fetching movie requests', error: err });
@@ -129,14 +128,30 @@ app.post('/api/movie-requests', authenticateToken, async (req, res) => {
   }
 });
 
-// ** Endpoint untuk admin menyetujui atau menolak request film **
+// ** Endpoint untuk admin menyetujui atau menolak request film, dan menambahkan film ke database **
 app.put('/api/movie-requests/:id', authenticateToken, authenticateAdmin, async (req, res) => {
-  const { status } = req.body;
+  const { status, title, country, genre, actor, releaseYear, synopsis } = req.body;
 
   try {
     const request = await MovieRequest.findById(req.params.id);
     if (!request) {
       return res.status(404).json({ message: 'Movie request not found' });
+    }
+
+    // Jika status adalah "approved", tambahkan movie ke koleksi movies
+    if (status === 'approved') {
+      const newMovie = new Movie({
+        title: title || request.title, // Update dengan judul baru jika ada
+        country: country || 'Unknown', // Update negara jika ada, atau default
+        genre: genre || request.genre, // Update genre jika ada
+        actor: actor || [], // Update actor jika ada
+        releaseYear: releaseYear || null, // Update tahun rilis jika ada
+        synopsis: synopsis || request.description, // Update sinopsis jika ada
+        averageRating: 0,
+        reviews: []
+      });
+
+      await newMovie.save();
     }
 
     request.status = status; // Update status (approved/rejected)
@@ -188,48 +203,6 @@ app.get('/api/movies/:title', async (req, res) => {
   }
 });
 
-// Endpoint untuk menambahkan review pada film
-app.post('/api/movies/rate', authenticateToken, async (req, res) => {
-  const { title, rating, reviewText } = req.body;
-
-  try {
-    // Cari movie berdasarkan title
-    const movie = await Movie.findOne({ title: title });
-    if (!movie) return res.status(404).json({ success: false, message: 'Movie not found' });
-
-    // Buat review baru dan simpan di collection `reviews`
-    const review = new Review({
-      movieId: movie._id,
-      userId: req.user.userId, // Ambil userId dari token JWT
-      rating: rating,
-      reviewText: reviewText
-    });
-
-    await review.save();
-
-    // Populate user information to return the review with user details
-    const populatedReview = await Review.findById(review._id).populate('userId', 'username name');
-
-    res.json({ success: true, review: populatedReview });
-  } catch (err) {
-    res.status(500).json({ success: false, message: 'Error adding review', error: err });
-  }
-});
-
-// Endpoint untuk mendapatkan semua review berdasarkan movieId
-app.get('/api/movies/:title/reviews', async (req, res) => {
-  try {
-    const movie = await Movie.findOne({ title: req.params.title });
-    if (!movie) return res.status(404).json({ message: 'Movie not found' });
-
-    const reviews = await Review.find({ movieId: movie._id }).populate('userId', 'username name');
-
-    res.json(reviews);
-  } catch (err) {
-    res.status(500).json({ message: 'Error fetching reviews', error: err });
-  }
-});
-
 // ** Routes untuk Login dan Registrasi **
 
 // Register route
@@ -259,9 +232,8 @@ app.post('/api/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid username or password' });
 
-    // Tambahkan 'role' ke dalam payload token
     const token = jwt.sign(
-      { userId: user._id, username: user.username, name: user.name, role: user.role }, // Pastikan role ditambahkan di sini
+      { userId: user._id, username: user.username, name: user.name, role: user.role }, // Tambahkan 'role' ke token
       'secretkey',
       { expiresIn: '1h' }
     );
