@@ -55,7 +55,9 @@ function HomePage() {
             {isAdmin && (
               <li><Link className="dropdown-item" to="/admin/movie-requests">Manage Movie Requests</Link></li>
             )}
-            <Link to="/request-movie">Request a Movie</Link>
+            {isLoggedIn && (
+              <li><Link className="dropdown-item" to="/request-movie">Request a Movie</Link></li>
+            )}
           </ul>
         </div>
         <div className="search-container">
@@ -88,13 +90,6 @@ function HomePage() {
             <upnext>Up next</upnext>
             <div className="square"></div> 
           </div>
-          {isLoggedIn && (
-            <div className="request-movie-container">
-              <Link to="/request-movie" className="request-movie-button">
-                Request a New Movie
-              </Link>
-            </div>
-          )}
       </body>
       
       <link rel="stylesheet" href="/css/style.css"></link>
