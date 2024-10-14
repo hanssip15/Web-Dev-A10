@@ -71,6 +71,8 @@ body {
     background-color: #000000;
     color: #ffffff;
     font-family: Arial, sans-serif;
+    display: flex;
+    flex-direction: column;
 }   
 
 .search-container {
@@ -112,10 +114,8 @@ body {
 
 /* CSS MovieDetailPage */
 .image-container {
-    width: 200px;
     height: 300px;
     display: flex;
-    position: relative;
     justify-content: left;
     margin-left: -10px;
     margin-top: 20px;
@@ -133,19 +133,13 @@ body {
 }
 
 .movie-detail-container {
-    margin: 20px;
-    padding: 20px;
-    background-color: #1a1a1a;
-    border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+    display: flex;
+    flex-direction: column;
 }
-
 .review-container {
     margin: 20px;
     padding: 20px;
-    background-color: #1a1a1a;
     border-radius: 10px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
 }
 
 .review-form {
@@ -182,4 +176,36 @@ body {
     background-color: #2a2a2a;
     border-radius: 10px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+.item {
+    display: flex;
+    flex-direction: column;
+}
+
+.custom-h1 {
+    margin-left: 1vw;
+    margin-bottom: 1vw
+}
+.custom-h3 {
+    margin-left: 1vw;
+    margin-top: -5vh;
+    margin-bottom: -100vh;
+}
+.content-container {
+    display: flex;
+    flex-direction: column;
+}
+.review-detail-container {
+    display: flex;
+    flex-direction: column;
+    margin-top: 20vw;
+}
+.star {
+    font-size: 30px; /* Ukuran bintang baru */
+    color: #ccc; /* Warna bintang default (abu-abu) */
+    margin-right: 5px;
+    cursor: pointer;
+}
+.star:hover {
+    color: #e3c426;
 }
