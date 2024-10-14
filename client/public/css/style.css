@@ -119,6 +119,19 @@ body {
     box-sizing: border-box; /* Pastikan padding termasuk dalam width/height */
 }
 
+.dropdown-menu {
+    background-color: #343a40;
+    color: white;
+}
+
+.dropdown-item {
+    color: white;
+}
+
+.dropdown-item:hover {
+    background-color: #495057;
+}
+  
 /* Body CSS */
 
 .image-container {
