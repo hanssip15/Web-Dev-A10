@@ -1,10 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
+import { jwtDecode } from 'jwt-decode';
 
 function MHeader() {
   const [searchQuery, setSearchQuery] = useState('');
   const [isLoggedIn, setIsLoggedIn] = useState(false);
+  const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
   const handleSearch = () => {
@@ -16,11 +18,17 @@ function MHeader() {
 
   // Cek status login saat komponen dimuat
   useEffect(() => {
-    const token = localStorage.getItem('token'); // Cek token di localStorage
+    const token = localStorage.getItem('token');
     if (token) {
-      setIsLoggedIn(true); // Jika token ada, pengguna sudah login
+      const decodedToken = jwtDecode(token);
+      setIsLoggedIn(true);
+      if (decodedToken.role === 'admin') {
+        setIsAdmin(true); // Jika role admin, set isAdmin menjadi true
+        console.log(decodedToken);
+      }
     } else {
-      setIsLoggedIn(false); // Jika tidak ada token, pengguna belum login
+      setIsLoggedIn(false);
+      setIsAdmin(false);
     }
   }, []);
 
@@ -35,7 +43,21 @@ function MHeader() {
       <header>
         <link rel="stylesheet" href="/css/style.css"></link>
         <logo> <Link to={'/'} className='custom-link'>MovieReview</Link></logo>
-        <listmenu>Menu</listmenu>
+        <div className="dropdown">
+          <button className="btn btn-danger dropdown-toggle" type="button" id="menuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            Menu
+          </button>
+          <ul className="dropdown-menu" aria-labelledby="menuDropdown">
+            <li><Link className="dropdown-item" to="/trending">Trending Movies</Link></li>
+            <li><Link className="dropdown-item" to="/new-releases">New Releases</Link></li>
+            {isAdmin && (
+              <li><Link className="dropdown-item" to="/admin/movie-requests">Manage Movie Requests</Link></li>
+            )}
+            {isLoggedIn && (
+              <li><Link className="dropdown-item" to="/request-movie">Request a Movie</Link></li>
+            )}
+          </ul>
+        </div>
         <div className="search-container">
           <input
             type="text"
