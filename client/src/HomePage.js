@@ -58,8 +58,8 @@ function HomePage() {
                 </div>
               </>
             )}
-          </div>
-          <div class="next-film">
+        </div>
+        <div class="next-film">
             <upnext>Up next</upnext>
             <ul>
               {movies.map((movie, index) => (
