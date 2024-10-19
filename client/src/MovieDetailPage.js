@@ -8,9 +8,8 @@ import MHeader from './components/MHeader.js';
 function MovieDetailPage() {
   const { title } = useParams();
   const [movie, setMovie] = useState(null);
-  const [reviews, setReviews] = useState([]); // State untuk reviews
   const [rating, setRating] = useState('');
-  const [reviewText, setReviewText] = useState('');
+  const [comment, setComment] = useState('');
   const [errorMessage, setErrorMessage] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
   const [hoverRating, setHoverRating] = useState(0);
@@ -21,19 +20,26 @@ function MovieDetailPage() {
   };
 
   useEffect(() => {
-    const fetchMovieAndReviews = async () => {
+    const fetchMovie = async () => {
       try {
-        const movieRes = await axios.get(`/api/movies/${encodeURIComponent(title)}`);
-        setMovie(movieRes.data);
-
-        const reviewsRes = await axios.get(`/api/movies/${encodeURIComponent(title)}/reviews`);
-        setReviews(reviewsRes.data);
+        const res = await axios.get(`/api/movies/${encodeURIComponent(title)}`);
+        setMovie(res.data); // Pastikan movie diambil dari response
       } catch (error) {
         setErrorMessage('Failed to load movie details or reviews.');
       }
     };
 
+<<<<<<< Updated upstream
     fetchMovieAndReviews();
+=======
+    fetchMovie();
+
+    // Cek status login dari token
+    const token = localStorage.getItem('token');
+    if (token) {
+      setIsLoggedIn(true);
+    }
+>>>>>>> Stashed changes
   }, [title]);
 
   const handleSubmit = async (e) => {
@@ -50,31 +56,31 @@ function MovieDetailPage() {
         setErrorMessage('You must be logged in to submit a review.');
         return;
       }
-
-      const config = {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      };
-
       const decodedToken = jwtDecode(token);
-      const response = await axios.post(
+
+      await axios.post(
         '/api/movies/rate',
         {
           title: movie.title,
           rating,
-          reviewText,
+          reviewText: comment, // Gunakan 'reviewText' untuk mengirim komentar
           name: decodedToken.name,
-          username: decodedToken.username,
         },
-        config
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
       );
-
       setRating('');
-      setReviewText('');
+      setComment('');
       setErrorMessage('');
       setSuccessMessage('Review submitted successfully!');
-      setReviews([...reviews, response.data.review]); // Menambahkan review baru ke state tanpa reload
+
+      // Fetch ulang data movie untuk mendapatkan review terbaru
+      const res = await axios.get(`/api/movies/${encodeURIComponent(title)}`);
+      setMovie(res.data); // Update movie dengan data terbaru
+
     } catch (error) {
       setErrorMessage('Failed to submit review. Please try again.');
     }
@@ -144,6 +150,7 @@ function MovieDetailPage() {
         </button>
       </form>
 
+<<<<<<< Updated upstream
       {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
       {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
 
@@ -171,6 +178,51 @@ function MovieDetailPage() {
         ) : (
           <p>No reviews yet.</p>
         )}
+=======
+        <h3>Submit Your Review</h3>
+        <form onSubmit={handleSubmit} className="review-form">
+          <input
+            type="number"
+            placeholder="Rating"
+            value={rating}
+            onChange={(e) => setRating(e.target.value)}
+            className="review-input"
+            min="1"
+            max="5"
+          />
+          <input
+            type="text"
+            placeholder="Comment"
+            value={comment}
+            onChange={(e) => setComment(e.target.value)}
+            className="review-input"
+          />
+          <button type="submit" className="submit-button">
+            Submit
+          </button>
+        </form>
+
+        {errorMessage && <p style={{ color: 'red' }}>{errorMessage}</p>}
+        {successMessage && <p style={{ color: 'green' }}>{successMessage}</p>}
+
+        <div className="review-container">
+          {/* Bagian untuk menampilkan reviews */}
+          <h3>Reviews</h3>
+          {movie.reviews && movie.reviews.length > 0 ? (
+            movie.reviews.map((review, index) => (
+              <div key={index} className="review-item">
+                <p>
+                  Name: <strong>{review.name || 'Anonymous'}</strong>
+                </p>
+                <p>Rate: {review.rating}/5</p>
+                <p>Comment: {review.comment}</p>
+              </div>
+            ))
+          ) : (
+            <p>No reviews yet.</p>
+          )}
+        </div>
+>>>>>>> Stashed changes
       </div>
     </div>
       </body>

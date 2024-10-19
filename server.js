@@ -203,6 +203,34 @@ app.get('/api/movies/:title', async (req, res) => {
   }
 });
 
+// Endpoint untuk menambahkan review pada film
+app.post('/api/movies/rate', authenticateToken, async (req, res) => {
+  const { title, rating, reviewText } = req.body;
+
+  try {
+    // Cari movie berdasarkan title
+    const movie = await Movie.findOne({ title: title });
+    if (!movie) return res.status(404).json({ success: false, message: 'Movie not found' });
+
+    // Buat review baru dan simpan di collection `reviews`
+    const review = new Review({
+      movieId: movie._id,
+      userId: req.user.userId, // Ambil userId dari token JWT
+      rating: rating,
+      reviewText: reviewText
+    });
+
+    await review.save();
+
+    // Populate user information to return the review with user details
+    const populatedReview = await Review.findById(review._id).populate('userId', 'username name');
+
+    res.json({ success: true, review: populatedReview });
+  } catch (err) {
+    res.status(500).json({ success: false, message: 'Error adding review', error: err });
+  }
+});
+
 // ** Routes untuk Login dan Registrasi **
 
 // Register route
