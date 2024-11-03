@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import axios from 'axios';
-import './LoginRegister.css'; // Pastikan kamu memiliki file LoginRegister.css untuk styling
+import './LoginRegister.css';
 
 const LoginRegister = () => {
   const [isRegistering, setIsRegistering] = useState(false);
@@ -10,7 +10,7 @@ const LoginRegister = () => {
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
-  const navigate = useNavigate(); // Gunakan useNavigate untuk navigasi
+  const navigate = useNavigate();
 
   // Fungsi untuk mengirim data registrasi ke backend
   const handleRegisterSubmit = async (e) => {
@@ -29,17 +29,22 @@ const LoginRegister = () => {
     e.preventDefault();
     try {
       const response = await axios.post('/api/login', { username, password });
-      const { token } = response.data;
+      const { token, role } = response.data;
+
+      // Simpan token dan role di localStorage
       localStorage.setItem('token', token);
-      window.location.href = '/'; // Redirect ke halaman utama setelah login sukses
+      localStorage.setItem('role', role);
+
+      // Arahkan ke halaman utama setelah login berhasil
+      navigate('/');
     } catch (error) {
       setError('Invalid username or password');
     }
-  };
+  };  
 
   // Fungsi untuk navigasi kembali
   const handleBackClick = () => {
-    navigate(-1); // Kembali ke halaman sebelumnya
+    navigate(-1);
   };
 
   return (

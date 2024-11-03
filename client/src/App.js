@@ -5,16 +5,21 @@ import MovieDetailPage from './MovieDetailPage';
 import Login from './LoginRegister';
 import SearchFilter from './SearchFilter';
 import MovieRequestForm from './MovieRequestForm';
-import MovieRequestAdmin from './MovieRequestAdmin';
+import CMSLayout from './components/CMS/CMSLayout';
+import Dashboard from './components/CMS/Dashboard';
+import ManageMovies from './components/CMS/ManageMovies';
+import ManageRequests from './components/CMS/ManageRequests';
+import ManageReviews from './components/CMS/ManageReviews';
+import ManageUsers from './components/CMS/ManageUsers';
 
 function App() {
   return (
     <Router>
       <Routes>
-        {/* Route untuk HomePage */}
+        {/* Route untuk halaman utama */}
         <Route path="/" element={<HomePage />} />
 
-        {/* Route untuk MovieDetailPage */}
+        {/* Route untuk halaman detail film */}
         <Route path="/movie/:title" element={<MovieDetailPage />} />
 
         {/* Route untuk halaman Login */}
@@ -25,9 +30,15 @@ function App() {
 
         {/* Route untuk halaman Request Movie */}
         <Route path="/request-movie" element={<MovieRequestForm />} />
-      
-        {/* Route untuk halaman admin */}
-        <Route path="/admin/movie-requests" element={<MovieRequestAdmin />} /> 
+
+        {/* Route untuk CMS dengan layout khusus untuk admin */}
+        <Route path="/admin" element={<CMSLayout />}>
+          <Route path="dashboard" element={<Dashboard />} />
+          <Route path="movies" element={<ManageMovies />} />
+          <Route path="requests" element={<ManageRequests />} />
+          <Route path="reviews" element={<ManageReviews />} />
+          <Route path="users" element={<ManageUsers />} />
+        </Route>
       </Routes>
     </Router>
   );
