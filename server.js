@@ -73,44 +73,35 @@ const Review = mongoose.model('Review', reviewSchema);
 const movieRequestSchema = new mongoose.Schema({
   title: { type: String, required: true },
   description: { type: String, required: true },
-  genre: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Genre' }],
+  genre: [{ type: String }], // Bisa array jika ada beberapa genre
   year: Number,
   status: { type: String, enum: ['pending', 'approved', 'rejected'], default: 'pending' },
   userId: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
-  requestDate: { type: Date, default: Date.now },
+  requestDate: { type: Date, default: Date.now }
 });
 const MovieRequest = mongoose.model('MovieRequest', movieRequestSchema);
 
-// ** Middleware untuk autentikasi admin dan user **
+// Middleware untuk autentikasi token
 const authenticateToken = (req, res, next) => {
   const token = req.headers['authorization'];
   if (!token) return res.status(401).json({ message: 'No token provided' });
 
   jwt.verify(token.split(' ')[1], 'secretkey', (err, user) => {
     if (err) return res.status(403).json({ message: 'Invalid token' });
-    req.user = user;
+    req.user = user; // Menyimpan user di request
     next();
   });
 };
 
+// Middleware untuk memeriksa role admin
 const authenticateAdmin = (req, res, next) => {
-  if (req.user.role !== 'admin') {
+  if (req.user.role !== 'admin') { // Pastikan `role` disimpan dalam token
     return res.status(403).json({ message: 'Access denied' });
   }
   next();
 };
 
 // Endpoint untuk admin melihat semua request movie dengan status 'pending'
-app.get('/api/movie-requests', authenticateToken, authenticateAdmin, async (req, res) => {
-  try {
-    const requests = await MovieRequest.find({ status: 'pending' }).populate('userId', 'username name');
-    res.json(requests);
-  } catch (err) {
-    res.status(500).json({ message: 'Error fetching movie requests', error: err });
-  }
-});
-
-// ** Endpoint untuk permintaan film baru (user yang login) **
 app.post('/api/movie-requests', authenticateToken, async (req, res) => {
   const { title, description, genre, year } = req.body;
 
@@ -120,12 +111,26 @@ app.post('/api/movie-requests', authenticateToken, async (req, res) => {
       description,
       genre,
       year,
-      userId: req.user.userId,
+      userId: req.user.userId // Mengambil userId dari token
     });
+
+    // Menyimpan request ke database
     await newRequest.save();
+
     res.status(201).json({ message: 'Movie request submitted successfully!' });
   } catch (err) {
+    console.error('Failed to submit movie request:', err); // Log detail error
     res.status(500).json({ message: 'Failed to submit movie request', error: err });
+  }
+});
+
+app.get('/api/movie-requests', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    const requests = await MovieRequest.find({ status: 'pending' }).populate('userId', 'username name');
+    res.json(requests);
+  } catch (err) {
+    console.error('Error fetching movie requests:', err);
+    res.status(500).json({ message: 'Error fetching movie requests', error: err });
   }
 });
 
@@ -296,25 +301,94 @@ app.post('/api/login', async (req, res) => {
   const { username, password } = req.body;
 
   try {
-    // Cari pengguna berdasarkan username
     const user = await User.findOne({ username });
     if (!user) return res.status(400).json({ message: 'Invalid username or password' });
 
-    // Verifikasi password
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid username or password' });
 
-    // Buat token JWT
+    // Menyertakan role dalam payload token
     const token = jwt.sign(
-      { userId: user._id, username: user.username, name: user.name, role: user.role },
-      'secretkey', // Ganti dengan kunci rahasia yang aman
+      { userId: user._id, username: user.username, role: user.role }, // Tambahkan `role` di sini
+      'secretkey',
       { expiresIn: '1h' }
     );
 
-    res.json({ token });
+    res.json({ token, role: user.role }); // Kirimkan `role` juga ke frontend
   } catch (err) {
-    console.error("Error in login:", err);
     res.status(500).json({ message: 'Error logging in', error: err });
+  }
+});
+
+// Endpoint khusus admin untuk mendapatkan semua data film
+app.get('/api/admin/movies', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    const movies = await Movie.find()
+      .populate('country', 'name')
+      .populate('genre', 'name')
+      .populate('actor', 'name');
+
+    res.json(movies);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch movies', error });
+  }
+});
+
+// Endpoint untuk statistik CMS
+app.get('/api/admin/stats', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    const totalMovies = await Movie.countDocuments();
+    const totalUsers = await User.countDocuments();
+    const totalReviews = await Review.countDocuments();
+    const pendingRequests = await MovieRequest.countDocuments({ status: 'pending' });
+
+    res.json({ totalMovies, totalUsers, totalReviews, pendingRequests });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch stats', error });
+  }
+});
+
+// Endpoint untuk mendapatkan semua review dengan populasi userId dan movieId
+app.get('/api/admin/reviews', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    const reviews = await Review.find()
+      .populate('userId', 'username') // Populate username dari user
+      .populate('movieId', 'title');  // Populate title dari movie
+    res.json(reviews);
+  } catch (error) {
+    console.error('Error fetching reviews:', error); // Log error untuk debugging
+    res.status(500).json({ message: 'Failed to fetch reviews', error });
+  }
+});
+
+// Endpoint untuk menghapus review berdasarkan ID
+app.delete('/api/admin/reviews/:id', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    await Review.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Review deleted successfully' });
+  } catch (error) {
+    console.error('Error deleting review:', error); // Log error untuk debugging
+    res.status(500).json({ message: 'Failed to delete review', error });
+  }
+});
+
+// Endpoint untuk mendapatkan semua user
+app.get('/api/admin/users', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    const users = await User.find().select('-password'); // Jangan mengirim password
+    res.json(users);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch users', error });
+  }
+});
+
+// Endpoint untuk menghapus user berdasarkan ID
+app.delete('/api/admin/users/:id', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    await User.findByIdAndDelete(req.params.id);
+    res.json({ message: 'User deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete user', error });
   }
 });
 

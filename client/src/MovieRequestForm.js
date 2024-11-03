@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import axios from 'axios';
+import MHeader from './components/MHeader.js';
 
 function MovieRequestForm() {
   const [formData, setFormData] = useState({
@@ -12,25 +13,27 @@ function MovieRequestForm() {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-
+  
     const token = localStorage.getItem('token');
     const config = {
       headers: {
         Authorization: `Bearer ${token}`,
       },
     };
-
+  
     try {
+      console.log('Form Data:', formData); // Log data sebelum mengirim
       const response = await axios.post('/api/movie-requests', formData, config);
       setMessage(response.data.message);
     } catch (error) {
-      console.error('Error submitting movie request', error);
+      console.error('Error submitting movie request:', error); // Log error dari server
       setMessage('Failed to submit request');
     }
-  };
+  };  
 
   return (
     <div>
+      <MHeader />
       <h1>Request a New Movie</h1>
       <form onSubmit={handleSubmit}>
         <label>

@@ -9,23 +9,13 @@ function MHeader() {
   const [isAdmin, setIsAdmin] = useState(false);
   const navigate = useNavigate();
 
-  const handleSearch = () => {
-    if (searchQuery.trim()) {
-      // Redirect ke halaman SearchFilter dengan query string
-      navigate(`/search?query=${encodeURIComponent(searchQuery.trim())}`);
-    }
-  };
-
-  // Cek status login saat komponen dimuat
+  // Cek status login dan role admin saat komponen dimuat
   useEffect(() => {
     const token = localStorage.getItem('token');
     if (token) {
       const decodedToken = jwtDecode(token);
       setIsLoggedIn(true);
-      if (decodedToken.role === 'admin') {
-        setIsAdmin(true); // Jika role admin, set isAdmin menjadi true
-        console.log(decodedToken);
-      }
+      setIsAdmin(decodedToken.role === 'admin'); // Cek apakah user adalah admin
     } else {
       setIsLoggedIn(false);
       setIsAdmin(false);
@@ -35,14 +25,21 @@ function MHeader() {
   const handleSignOut = () => {
     localStorage.removeItem('token'); // Hapus token dari localStorage
     setIsLoggedIn(false); // Set status menjadi logout
-    window.location.href = '/'; // Redirect ke halaman utama
+    setIsAdmin(false); // Reset status admin
+    navigate('/'); // Redirect ke halaman utama
+  };
+
+  const handleSearch = () => {
+    if (searchQuery.trim()) {
+      navigate(`/search?query=${encodeURIComponent(searchQuery.trim())}`);
+    }
   };
 
   return (
     <div>
       <header>
         <link rel="stylesheet" href="/css/style.css"></link>
-        <logo> <Link to={'/'} className='custom-link'>MovieReview</Link></logo>
+        <logo><Link to={'/'} className='custom-link'>MovieReview</Link></logo>
         <div className="dropdown">
           <button className="btn btn-danger dropdown-toggle" type="button" id="menuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
             Menu
@@ -51,7 +48,7 @@ function MHeader() {
             <li><Link className="dropdown-item" to="/trending">Trending Movies</Link></li>
             <li><Link className="dropdown-item" to="/new-releases">New Releases</Link></li>
             {isAdmin && (
-              <li><Link className="dropdown-item" to="/admin/movie-requests">Manage Movie Requests</Link></li>
+              <li><Link className="dropdown-item" to="/admin/dashboard">Admin Dashboard</Link></li> // Link ke CMS admin
             )}
             {isLoggedIn && (
               <li><Link className="dropdown-item" to="/request-movie">Request a Movie</Link></li>
@@ -69,14 +66,12 @@ function MHeader() {
           <button onClick={handleSearch} className="search-button">Search</button>
         </div>
         <watchlist>Watchlist</watchlist>
-        <div className="signin-container"></div>
-        {/* Kondisi jika pengguna sudah login atau belum */}
         <div className="signin-container">
-        {isLoggedIn ? (
-          <button className="signout-button" onClick={handleSignOut}>Sign Out</button>
-        ) : (
-          <Link to="/login" className="signin-link">Sign In</Link>
-        )}
+          {isLoggedIn ? (
+            <button className="signout-button" onClick={handleSignOut}>Sign Out</button>
+          ) : (
+            <Link to="/login" className="signin-link">Sign In</Link>
+          )}
         </div>
         <language>EN</language>
       </header>

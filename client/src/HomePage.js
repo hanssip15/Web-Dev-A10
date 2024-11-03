@@ -11,7 +11,7 @@ function HomePage() {
     const fetchData = async () => {
       try {
         const movieRes = await axios.get('/api/movies');
-        console.log('Movies data in HomePage:', movieRes.data); // Tambahkan log ini
+        console.log('Movies data in HomePage:', movieRes.data);
         setMovies(movieRes.data);
       } catch (error) {
         console.error('Error fetching movies:', error);
