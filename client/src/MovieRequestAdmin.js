@@ -12,6 +12,9 @@ function MovieRequestAdmin() {
     releaseYear: '',
     synopsis: ''
   });
+  const [countries, setCountries] = useState([]);
+  const [genres, setGenres] = useState([]);
+  const [actors, setActors] = useState([]);
 
   useEffect(() => {
     const fetchRequests = async () => {
@@ -30,7 +33,23 @@ function MovieRequestAdmin() {
       }
     };
 
+    const fetchMetadata = async () => {
+      try {
+        const [countriesRes, genresRes, actorsRes] = await Promise.all([
+          axios.get('/api/countries'), // Assumes `/api/countries` endpoint exists
+          axios.get('/api/genres'), // Assumes `/api/genres` endpoint exists
+          axios.get('/api/actors') // Assumes `/api/actors` endpoint exists
+        ]);
+        setCountries(countriesRes.data);
+        setGenres(genresRes.data);
+        setActors(actorsRes.data);
+      } catch (error) {
+        console.error('Error fetching metadata', error);
+      }
+    };
+
     fetchRequests();
+    fetchMetadata();
   }, []);
 
   const handleApprove = async (id) => {
@@ -42,14 +61,12 @@ function MovieRequestAdmin() {
     };
 
     try {
-      // Kirim data film yang sudah di-update oleh admin
       await axios.put(`/api/movie-requests/${id}`, {
         status: 'approved',
-        ...updatedMovie
+        ...updatedMovie,
       }, config);
 
       alert('Movie approved and added successfully!');
-      // Reload atau update daftar request
       setRequests(requests.filter(request => request._id !== id));
     } catch (error) {
       console.error('Error approving movie request', error);
@@ -67,7 +84,6 @@ function MovieRequestAdmin() {
     try {
       await axios.put(`/api/movie-requests/${id}`, { status: 'rejected' }, config);
       alert('Movie request rejected.');
-      // Reload atau update daftar request
       setRequests(requests.filter(request => request._id !== id));
     } catch (error) {
       console.error('Error rejecting movie request', error);
@@ -104,27 +120,39 @@ function MovieRequestAdmin() {
           </label>
           <label>
             Country:
-            <input
-              type="text"
+            <select
               value={updatedMovie.country}
               onChange={(e) => setUpdatedMovie({ ...updatedMovie, country: e.target.value })}
-            />
+            >
+              <option value="">Select Country</option>
+              {countries.map(country => (
+                <option key={country._id} value={country._id}>{country.name}</option>
+              ))}
+            </select>
           </label>
           <label>
             Genre:
-            <input
-              type="text"
+            <select
+              multiple
               value={updatedMovie.genre}
-              onChange={(e) => setUpdatedMovie({ ...updatedMovie, genre: e.target.value.split(',') })}
-            />
+              onChange={(e) => setUpdatedMovie({ ...updatedMovie, genre: Array.from(e.target.selectedOptions, option => option.value) })}
+            >
+              {genres.map(genre => (
+                <option key={genre._id} value={genre._id}>{genre.name}</option>
+              ))}
+            </select>
           </label>
           <label>
             Actor:
-            <input
-              type="text"
+            <select
+              multiple
               value={updatedMovie.actor}
-              onChange={(e) => setUpdatedMovie({ ...updatedMovie, actor: e.target.value.split(',') })}
-            />
+              onChange={(e) => setUpdatedMovie({ ...updatedMovie, actor: Array.from(e.target.selectedOptions, option => option.value) })}
+            >
+              {actors.map(actor => (
+                <option key={actor._id} value={actor._id}>{actor.name}</option>
+              ))}
+            </select>
           </label>
           <label>
             Release Year:
