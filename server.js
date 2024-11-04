@@ -217,6 +217,16 @@ app.get('/api/movies/:title', async (req, res) => {
   }
 });
 
+// Endpoint untuk mengupdate detail film berdasarkan ID
+app.put('/api/admin/movies/:id', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    const updatedMovie = await Movie.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    res.json(updatedMovie);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update movie', error });
+  }
+});
+
 app.post('/api/movies/rate', authenticateToken, async (req, res) => {
   const { title, rating, reviewText } = req.body;
 
