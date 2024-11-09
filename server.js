@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema({
   username: { type: String, unique: true, required: true },
   password: { type: String, required: true },
   role: { type: String, default: 'user' },
+  suspendUntil: { type: Date, default: null },
 });
 const User = mongoose.model('User', userSchema);
 
@@ -101,6 +102,33 @@ const authenticateToken = (req, res, next) => {
     req.user = user; // Menyimpan user di request
     next();
   });
+};
+
+// Middleware untuk memeriksa apakah user sedang disuspend
+const checkUserSuspension = async (req, res, next) => {
+  const { username } = req.body;
+
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      // Jika pengguna tidak ditemukan
+      return res.status(400).json({ message: 'Username atau password salah.' });
+    }
+
+    // Cek apakah user sedang disuspend
+    if (user.suspendUntil && new Date() < new Date(user.suspendUntil)) {
+      const suspendEnd = new Date(user.suspendUntil).toLocaleString();
+      const timeLeft = Math.ceil((new Date(user.suspendUntil) - new Date()) / (1000 * 60)); // Waktu tersisa dalam menit
+      return res.status(403).json({
+        message: `Akun tersebut sedang disuspend sampai: ${suspendEnd}. Silakan coba lagi dalam ${timeLeft} menit.`,
+      });
+    }
+
+    // Lanjutkan jika user tidak disuspend
+    next();
+  } catch (error) {
+    res.status(500).json({ message: 'Error checking user suspension', error });
+  }
 };
 
 // Middleware untuk memeriksa role admin
@@ -341,9 +369,9 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-app.post('/api/login', async (req, res) => {
+// Endpoint login dengan pengecekan suspend user
+app.post('/api/login', checkUserSuspension, async (req, res) => {
   const { username, password } = req.body;
-
   try {
     const user = await User.findOne({ username });
     if (!user) return res.status(400).json({ message: 'Invalid username or password' });
@@ -351,16 +379,17 @@ app.post('/api/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid username or password' });
 
-    // Menyertakan role dalam payload token
+    // Buat token JWT dengan menyertakan role
     const token = jwt.sign(
-      { userId: user._id, username: user.username, role: user.role }, // Tambahkan `role` di sini
+      { userId: user._id, role: user.role },
       'secretkey',
       { expiresIn: '1h' }
     );
 
-    res.json({ token, role: user.role }); // Kirimkan `role` juga ke frontend
-  } catch (err) {
-    res.status(500).json({ message: 'Error logging in', error: err });
+    // Kirimkan token dan role ke frontend
+    res.json({ token, role: user.role });
+  } catch (error) {
+    res.status(500).json({ message: 'Error logging in', error });
   }
 });
 
@@ -416,23 +445,79 @@ app.delete('/api/admin/reviews/:id', authenticateToken, authenticateAdmin, async
   }
 });
 
-// Endpoint untuk mendapatkan semua user
+// Endpoint untuk mendapatkan daftar user (kecuali user yang sedang login)
 app.get('/api/admin/users', authenticateToken, authenticateAdmin, async (req, res) => {
   try {
-    const users = await User.find().select('-password'); // Jangan mengirim password
-    res.json(users);
+    const currentUserId = req.user.userId;
+    const currentUser = await User.findById(currentUserId).select('name username _id');
+    const users = await User.find({ _id: { $ne: currentUserId } }).select('-password');
+    res.json({ currentUser, users });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch users', error });
   }
 });
 
-// Endpoint untuk menghapus user berdasarkan ID
+// Endpoint untuk menghapus akun user berdasarkan ID
 app.delete('/api/admin/users/:id', authenticateToken, authenticateAdmin, async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
+    const userId = req.params.id;
+    const currentUserId = req.user.userId;
+
+    // Cegah admin menghapus akun yang sedang digunakan
+    if (userId === currentUserId) {
+      return res.status(400).json({ message: "You cannot delete the currently logged-in account." });
+    }
+
+    // Hapus user dari database
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    // Jika user tidak ditemukan
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
+    console.error('Error deleting user:', error);
     res.status(500).json({ message: 'Failed to delete user', error });
+  }
+});
+
+// Suspend User
+app.put('/api/admin/users/:id/suspend', authenticateToken, authenticateAdmin, async (req, res) => {
+  const { duration } = req.body;
+  const suspendDurations = {
+    '1h': 1,
+    '3h': 3,
+    '6h': 6,
+    '12h': 12,
+    '1d': 24,
+    '2d': 48,
+    '3d': 72,
+  };
+
+  if (!suspendDurations[duration]) {
+    return res.status(400).json({ message: 'Invalid suspension duration' });
+  }
+
+  const suspendUntil = new Date();
+  suspendUntil.setHours(suspendUntil.getHours() + suspendDurations[duration]);
+
+  try {
+    await User.findByIdAndUpdate(req.params.id, { suspendUntil });
+    res.json({ message: `User suspended for ${duration}` });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to suspend user', error });
+  }
+});
+
+// Unsuspend User
+app.put('/api/admin/users/:id/unsuspend', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.params.id, { suspendUntil: null });
+    res.json({ message: 'User unsuspended successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to unsuspend user', error });
   }
 });
 

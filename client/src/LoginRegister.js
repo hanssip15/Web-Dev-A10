@@ -17,10 +17,10 @@ const LoginRegister = () => {
     e.preventDefault();
     try {
       await axios.post('/api/register', { name, username, password });
-      setSuccessMessage('Registration successful! You can now log in.');
+      setSuccessMessage('Registrasi berhasil! Silakan login.');
       setIsRegistering(false);
     } catch (error) {
-      setError('Failed to register. Username might already be taken.');
+      setError('Gagal registrasi. Username mungkin sudah digunakan.');
     }
   };
 
@@ -38,9 +38,14 @@ const LoginRegister = () => {
       // Arahkan ke halaman utama setelah login berhasil
       navigate('/');
     } catch (error) {
-      setError('Invalid username or password');
+      // Jika akun sedang disuspend, tampilkan pesan dengan waktu berakhir suspend
+      if (error.response && error.response.status === 403) {
+        setError(error.response.data.message);
+      } else {
+        setError('Username atau password salah.');
+      }
     }
-  };  
+  };
 
   // Fungsi untuk navigasi kembali
   const handleBackClick = () => {
@@ -52,11 +57,11 @@ const LoginRegister = () => {
       {isRegistering ? (
         // Form registrasi
         <form className="login-form" onSubmit={handleRegisterSubmit}>
-          <h2>Register</h2>
+          <h2>Registrasi</h2>
           {error && <p className="error">{error}</p>}
           {successMessage && <p className="success">{successMessage}</p>}
           <div className="form-group">
-            <label>Name</label>
+            <label>Nama</label>
             <input
               type="text"
               value={name}
@@ -82,11 +87,11 @@ const LoginRegister = () => {
               required
             />
           </div>
-          <button type="submit">Register</button>
+          <button type="submit">Daftar</button>
           <p>
-            Already have an account?{' '}
+            Sudah punya akun?{' '}
             <span className="toggle-link" onClick={() => setIsRegistering(false)}>
-              Log In
+              Login
             </span>
           </p>
           <button type="button" className="back-button" onClick={handleBackClick}>
@@ -118,9 +123,9 @@ const LoginRegister = () => {
           </div>
           <button type="submit">Login</button>
           <p>
-            Don't have an account?{' '}
+            Belum punya akun?{' '}
             <span className="toggle-link" onClick={() => setIsRegistering(true)}>
-              Register
+              Daftar
             </span>
           </p>
           <button type="button" className="back-button" onClick={handleBackClick}>
