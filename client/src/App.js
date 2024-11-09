@@ -11,6 +11,7 @@ import ManageMovies from './components/CMS/ManageMovies';
 import ManageRequests from './components/CMS/ManageRequests';
 import ManageReviews from './components/CMS/ManageReviews';
 import ManageUsers from './components/CMS/ManageUsers';
+import ManageActors from './components/CMS/ManageActors';
 
 function App() {
   return (
@@ -38,6 +39,7 @@ function App() {
           <Route path="requests" element={<ManageRequests />} />
           <Route path="reviews" element={<ManageReviews />} />
           <Route path="users" element={<ManageUsers />} />
+          <Route path="actors" element={<ManageActors />} />
         </Route>
       </Routes>
     </Router>

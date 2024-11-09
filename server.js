@@ -217,10 +217,34 @@ app.get('/api/movies/:title', async (req, res) => {
   }
 });
 
-// Endpoint untuk mengupdate detail film berdasarkan ID
+// Endpoint untuk mengedit detail film
 app.put('/api/admin/movies/:id', authenticateToken, authenticateAdmin, async (req, res) => {
+  const { title, country, genre, actor, releaseYear, synopsis } = req.body;
+
   try {
-    const updatedMovie = await Movie.findByIdAndUpdate(req.params.id, req.body, { new: true });
+    // Validasi aktor: Pastikan aktor yang dimasukkan ada dalam database
+    const existingActors = await Actor.find();
+    const validActorIds = existingActors.map(a => a._id.toString());
+    const invalidActors = actor.filter(id => !validActorIds.includes(id));
+
+    // Jika ada aktor yang tidak valid, kirim respons dengan daftar aktor yang tidak ditemukan
+    if (invalidActors.length > 0) {
+      return res.status(400).json({
+        message: 'Some actors do not exist in the database',
+        invalidActors
+      });
+    }
+
+    // Update film dengan data yang sudah divalidasi
+    const updatedMovie = await Movie.findByIdAndUpdate(
+      req.params.id,
+      { title, country, genre, actor, releaseYear, synopsis },
+      { new: true }
+    )
+      .populate('country', 'name')
+      .populate('genre', 'name')
+      .populate('actor', 'name');
+
     res.json(updatedMovie);
   } catch (error) {
     res.status(500).json({ message: 'Failed to update movie', error });
@@ -279,13 +303,13 @@ app.get('/api/genres', async (req, res) => {
   }
 });
 
-// Endpoint untuk mendapatkan semua actors
-app.get('/api/actors', async (req, res) => {
+// Endpoint untuk mendapatkan semua aktor
+app.get('/api/actors', authenticateToken, authenticateAdmin, async (req, res) => {
   try {
     const actors = await Actor.find();
     res.json(actors);
-  } catch (err) {
-    res.status(500).json({ message: 'Error fetching actors', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch actors', error });
   }
 });
 
@@ -399,6 +423,49 @@ app.delete('/api/admin/users/:id', authenticateToken, authenticateAdmin, async (
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Failed to delete user', error });
+  }
+});
+
+// Endpoint untuk mendapatkan semua aktor
+app.get('/api/admin/actors', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    const actors = await Actor.find();
+    res.json(actors);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch actors', error });
+  }
+});
+
+// Endpoint untuk menambahkan aktor baru
+app.post('/api/admin/actors', authenticateToken, authenticateAdmin, async (req, res) => {
+  const { name } = req.body;
+  try {
+    const newActor = new Actor({ name });
+    await newActor.save();
+    res.status(201).json({ message: 'Actor added successfully', actor: newActor });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to add actor', error });
+  }
+});
+
+// Endpoint untuk memperbarui aktor berdasarkan ID
+app.put('/api/admin/actors/:id', authenticateToken, authenticateAdmin, async (req, res) => {
+  const { name } = req.body;
+  try {
+    const updatedActor = await Actor.findByIdAndUpdate(req.params.id, { name }, { new: true });
+    res.json({ message: 'Actor updated successfully', actor: updatedActor });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update actor', error });
+  }
+});
+
+// Endpoint untuk menghapus aktor berdasarkan ID
+app.delete('/api/admin/actors/:id', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    await Actor.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Actor deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete actor', error });
   }
 });
 
