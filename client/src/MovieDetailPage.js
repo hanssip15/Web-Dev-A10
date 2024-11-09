@@ -111,6 +111,9 @@ function MovieDetailPage() {
               <strong>Release Year:</strong> {movie.releaseYear}
             </p>
             <p>
+              <strong>Awards:</strong> {movie.awards ? movie.awards.map(a => a.name).join(', ') : 'Unknown'}
+            </p>
+            <p>
               <strong>Average Rating:</strong> {movie.averageRating ? movie.averageRating.toFixed(1) : 'N/A'}
             </p>
           </div>

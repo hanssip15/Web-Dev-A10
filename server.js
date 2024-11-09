@@ -55,7 +55,8 @@ const movieSchema = new mongoose.Schema({
   actor: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Actor' }],
   releaseYear: Number,
   synopsis: String,
-  averageRating: Number
+  averageRating: Number,
+  awards: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Award' }]
 });
 const Movie = mongoose.model('Movie', movieSchema);
 
@@ -80,6 +81,15 @@ const movieRequestSchema = new mongoose.Schema({
   requestDate: { type: Date, default: Date.now }
 });
 const MovieRequest = mongoose.model('MovieRequest', movieRequestSchema);
+
+// Award Schema
+const awardSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  year: { type: Number, required: true },
+  category: { type: String, required: true },
+  movieId: { type: mongoose.Schema.Types.ObjectId, ref: 'Movie', required: true }
+});
+const Award = mongoose.model('Award', awardSchema);
 
 // Middleware untuk autentikasi token
 const authenticateToken = (req, res, next) => {
@@ -197,11 +207,11 @@ app.get('/api/movies', async (req, res) => {
 // Endpoint untuk mendapatkan detail film berdasarkan title
 app.get('/api/movies/:title', async (req, res) => {
   try {
-    // Temukan film berdasarkan judul dan populasi country, genre, dan actor
     const movie = await Movie.findOne({ title: req.params.title })
       .populate('country', 'name')     // Mem-populate country hanya dengan nama
       .populate('genre', 'name')       // Mem-populate genre hanya dengan nama
-      .populate('actor', 'name');      // Mem-populate actor hanya dengan nama
+      .populate('actor', 'name')       // Mem-populate actor hanya dengan nama
+      .populate('awards', 'name year category'); // Mem-populate awards dengan field yang relevan
 
     if (!movie) {
       return res.status(404).json({ message: 'Movie not found' });
@@ -466,6 +476,83 @@ app.delete('/api/admin/actors/:id', authenticateToken, authenticateAdmin, async 
     res.json({ message: 'Actor deleted successfully' });
   } catch (error) {
     res.status(500).json({ message: 'Failed to delete actor', error });
+  }
+});
+
+/// Endpoint untuk menambahkan penghargaan baru
+app.post('/api/admin/awards', authenticateToken, authenticateAdmin, async (req, res) => {
+  const { name, year, category, movieId } = req.body;
+
+  // Validasi input
+  if (!name || !year || !category || !movieId) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
+  try {
+    const newAward = new Award({ name, year, category, movieId });
+    await newAward.save();
+
+    // Update movie dengan menambahkan award
+    await Movie.findByIdAndUpdate(movieId, { $push: { awards: newAward._id } });
+
+    res.status(201).json(newAward);
+  } catch (error) {
+    console.error('Failed to create award:', error);
+    res.status(500).json({ message: 'Failed to create award', error });
+  }
+});
+
+// Endpoint untuk mendapatkan semua penghargaan
+app.get('/api/admin/awards', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    const awards = await Award.find().populate('movieId', 'title');
+    res.json(awards);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch awards', error });
+  }
+});
+
+// Endpoint untuk mengupdate penghargaan
+app.put('/api/admin/awards/:id', authenticateToken, authenticateAdmin, async (req, res) => {
+  const { name, year, category, movieId } = req.body;
+
+  try {
+    const existingAward = await Award.findById(req.params.id);
+    const oldMovieId = existingAward.movieId.toString();
+
+    // Perbarui penghargaan
+    const updatedAward = await Award.findByIdAndUpdate(
+      req.params.id,
+      { name, year, category, movieId },
+      { new: true }
+    ).populate('movieId', 'title');
+
+    // Jika movieId diubah, perbarui koleksi film
+    if (oldMovieId !== movieId) {
+      await Movie.findByIdAndUpdate(oldMovieId, { $pull: { awards: req.params.id } });
+      await Movie.findByIdAndUpdate(movieId, { $push: { awards: req.params.id } });
+    }
+
+    res.json(updatedAward);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update award', error });
+  }
+});
+
+// Endpoint untuk menghapus penghargaan
+app.delete('/api/admin/awards/:id', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    const awardId = req.params.id;
+    const award = await Award.findByIdAndDelete(awardId);
+
+    // Hapus penghargaan dari koleksi film yang terkait
+    if (award) {
+      await Movie.findByIdAndUpdate(award.movieId, { $pull: { awards: awardId } });
+    }
+
+    res.json({ message: 'Award deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete award', error });
   }
 });
 
