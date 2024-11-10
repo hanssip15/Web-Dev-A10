@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Navbar from './navbarcms';
+import Header from './CMSHeader';
 
 const ManageReviews = () => {
   const [reviews, setReviews] = useState([]);
@@ -40,22 +42,51 @@ const ManageReviews = () => {
 
   return (
     <div>
-      <h2>Manage Reviews</h2>
-      <ul>
-        {reviews.length > 0 ? (
-          reviews.map((review) => (
-            <li key={review._id}>
-              <p><strong>User:</strong> {review.userId.username}</p>
-              <p><strong>Movie:</strong> {review.movieId.title}</p>
-              <p><strong>Rating:</strong> {review.rating}</p>
-              <p><strong>Review:</strong> {review.reviewText}</p>
-              <button onClick={() => deleteReview(review._id)}>Delete</button>
-            </li>
-          ))
-        ) : (
-          <p>No reviews found.</p>
-        )}
-      </ul>
+        <body id='page-top'>
+            <div id='wrapper'>
+                    <Navbar/>
+                    <div id="content-wrapper" class="d-flex flex-column">
+                        <div id='content'>
+                            <Header/>
+                            <div className='container-fluid'>
+                                <h1 className='h3 mb-2 text-gray-800'>Manage Review</h1>
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">DataTables</h6>
+                                    </div>
+                                    <div className="card-body">
+                                        <div className="table-responsive">
+                                            <table className="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Username</th>
+                                                        <th>Movie</th>
+                                                        <th>Genre</th>
+                                                        <th>Rating</th>
+                                                        <th>Review</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                  {reviews.map((review) => (
+                                                  <tr key={review._id}>
+                                                    <td>{review.userId.username}</td>
+                                                    <td>{review.movieId.title}</td>
+                                                    <td>{review.rating}</td>
+                                                    <td>{review.reviewText}</td>
+                                                    <td><button onClick={() => deleteReview(review._id)}>Delete</button></td>
+                                                  </tr>
+                                                ))} 
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </body>
     </div>
   );
 };

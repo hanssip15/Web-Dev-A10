@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Navbar from './navbarcms';
+import Header from './CMSHeader';
 
 const ManageMovies = () => {
   const [movies, setMovies] = useState([]);
@@ -22,23 +24,53 @@ const ManageMovies = () => {
 
   return (
     <div>
-      <h2>Manage Movies</h2>
-      {movies.length > 0 ? (
-        <ul>
-          {movies.map(movie => (
-            <li key={movie._id}>
-              <h3>{movie.title}</h3>
-              <p>Country: {movie.country?.name || "Unknown"}</p>
-              <p>Genre: {movie.genre.map(g => g.name).join(", ")}</p>
-              <p>Actors: {movie.actor.map(a => a.name).join(", ")}</p>
-              <p>Release Year: {movie.releaseYear}</p>
-              <p>Average Rating: {movie.averageRating}</p>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No movies found.</p>
-      )}
+        <body id='page-top'>
+            <div id='wrapper'>
+                    <Navbar/>
+                    <div id="content-wrapper" class="d-flex flex-column">
+                        <div id='content'>
+                            <Header/>
+                            <div className='container-fluid'>
+                                <h1 className='h3 mb-2 text-gray-800'>Manage Movie</h1>
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">DataTables</h6>
+                                    </div>
+                                    <div className="card-body">
+                                        <div className="table-responsive">
+                                            <table className="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Movie Name</th>
+                                                        <th>Country</th>
+                                                        <th>Genre</th>
+                                                        <th>Actors</th>
+                                                        <th>Release Year</th>
+                                                        <th>Average Rating</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                {movies.map(movie => (
+                                                  <tr key={movie._id}>
+                                                    <td>{movie.title}</td>
+                                                    <td>{movie.country?.name || "Unknown"}</td>
+                                                    <td>{movie.genre.map(g => g.name).join(", ")}</td>
+                                                    <td>{movie.actor.map(a => a.name).join(", ")}</td>
+                                                    <td>{movie.releaseYear}</td>
+                                                    <td>{movie.averageRating}</td>
+                                                  </tr>
+                                                ))} 
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </body>
     </div>
   );
 };
