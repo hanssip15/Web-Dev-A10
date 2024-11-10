@@ -26,9 +26,16 @@ function Navbar() {
                     <Link to='/admin/reviews' className="nav-link">
                         <span>Manage Reviews</span>
                     </Link>
+                    <Link to='/admin/actors' className="nav-link">
+                        <span>Manage Actors</span>
+                    </Link>
+                    <Link to='/admin/awards' className="nav-link">
+                        <span>Manage Awards</span>
+                    </Link>
                     <Link to='/admin/users' className="nav-link">
                         <span>Manage Users</span>
                     </Link>
+
 
                     <hr className="sidebar-divider my-0"/>
                 </li>

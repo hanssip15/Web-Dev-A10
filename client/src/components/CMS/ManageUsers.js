@@ -70,6 +70,12 @@ const ManageUsers = () => {
     }
   };
 
+  const currentUserInfo = (
+    <p>
+      <strong>Akun yang sedang dipakai:</strong> {currentUserId}
+    </p>
+  );
+
   return (
     <div>
         <body id='page-top'>
@@ -79,19 +85,27 @@ const ManageUsers = () => {
                         <div id='content'>
                             <Header/>
                             <div className='container-fluid'>
-                                <h1 className='h3 mb-2 text-gray-800'>Manage Movie</h1>
+                                <h1 className='h3 mb-2 text-gray-800'>Manage Users</h1>
                                 <div class="card shadow mb-4">
                                     <div class="card-header py-3">
                                         <h6 class="m-0 font-weight-bold text-primary">DataTables</h6>
                                     </div>
                                     <div className="card-body">
                                         <div className="table-responsive">
+                                        <div class="dataTables_length" id="dataTable_length">
+                                          <label>
+                                            Show Entries<select name="dataTable_length" aria-controls="dataTable" class="custom-select custom-select-sm form-control form-control-sm">
+                                              <option value="5">5</option><option value="25">25</option><option value="50">50</option><option value="100">100</option>
+                                              </select> 
+                                          </label>
+                                        </div>
                                             <table className="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                                 <thead>
                                                     <tr>
                                                         <th>Username</th>
                                                         <th>Name</th>
                                                         <th>Role</th>
+                                                        <th>Status</th>
                                                         <th>Action</th>
                                                     </tr>
                                                 </thead>
@@ -101,7 +115,8 @@ const ManageUsers = () => {
                                                     <td>{user.username}</td>
                                                     <td>{user.name}</td>
                                                     <td>{user.role}</td>
-                                                    <td><button className="btn btn-danger btn-circle" onClick={() => handleDelete(user._id)}></button></td>
+                                                    <td>{user.suspendUntil ? 'Suspended' : 'Active'}</td>
+                                                    <td><button onClick={() => handleDelete(user._id)}></button></td>
                                                   </tr>
                                                 ))} 
                                                 </tbody>

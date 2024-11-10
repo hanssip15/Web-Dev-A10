@@ -66,6 +66,13 @@ const ManageMovies = () => {
                                     </div>
                                     <div className="card-body">
                                         <div className="table-responsive">
+                                        <div class="dataTables_length" id="dataTable_length">
+                                          <label>
+                                            Show Entries<select name="dataTable_length" aria-controls="dataTable" class="custom-select custom-select-sm form-control form-control-sm">
+                                              <option value="5">5</option><option value="25">25</option><option value="50">50</option><option value="100">100</option>
+                                              </select> 
+                                          </label>
+                                        </div>
                                             <table className="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                                 <thead>
                                                     <tr>
@@ -87,6 +94,7 @@ const ManageMovies = () => {
                                                     <td>{movie.actor.map(a => a.name).join(", ")}</td>
                                                     <td>{movie.releaseYear}</td>
                                                     <td>{movie.averageRating}</td>
+                                                    <td><button onClick={() => handleEditMovie(movie._id)}> Edit</button> <button onClick={() => handleDeleteMovie(movie._id)}> Delete</button></td>
                                                   </tr>
                                                 ))} 
                                                 </tbody>
