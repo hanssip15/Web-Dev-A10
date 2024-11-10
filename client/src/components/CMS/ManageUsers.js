@@ -6,38 +6,69 @@ import Header from './CMSHeader';
 
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
+  const [currentUserId, setCurrentUserId] = useState('');
+  const token = localStorage.getItem('token');
 
-  const fetchUsers = async () => {
-    const token = localStorage.getItem('token');
-    const config = {
-      headers: { Authorization: `Bearer ${token}` },
-    };
-
-    try {
-      const response = await axios.get('/api/admin/users', config);
-      setUsers(response.data);
-    } catch (error) {
-      console.error('Failed to fetch users:', error);
-    }
-  };
-
-  const deleteUser = async (userId) => {
-    const token = localStorage.getItem('token');
-    const config = {
-      headers: { Authorization: `Bearer ${token}` },
-    };
-
-    try {
-      await axios.delete(`/api/admin/users/${userId}`, config);
-      setUsers(users.filter((user) => user._id !== userId));
-    } catch (error) {
-      console.error('Failed to delete user:', error);
-    }
-  };
-
+  // Fetch daftar user
   useEffect(() => {
+    const fetchUsers = async () => {
+      try {
+        const response = await axios.get('/api/admin/users', {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        setCurrentUserId(response.data.currentUserId);
+        setUsers(response.data.users);
+      } catch (error) {
+        console.error('Error fetching users:', error);
+      }
+    };
+
     fetchUsers();
-  }, []);
+  }, [token]);
+
+  // Fungsi untuk suspend user
+  const handleSuspend = async (userId, duration) => {
+    try {
+      await axios.put(
+        `/api/admin/users/${userId}/suspend`,
+        { duration },
+        { headers: { Authorization: `Bearer ${token}` } }
+      );
+      alert(`User suspended for ${duration}`);
+    } catch (error) {
+      console.error('Failed to suspend user:', error);
+      alert('Failed to suspend user. Please try again.');
+    }
+  };
+
+  // Fungsi untuk unsuspend user
+  const handleUnsuspend = async (userId) => {
+    try {
+      await axios.put(`/api/admin/users/${userId}/unsuspend`, null, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      alert('User unsuspended successfully');
+    } catch (error) {
+      console.error('Failed to unsuspend user:', error);
+      alert('Failed to unsuspend user. Please try again.');
+    }
+  };
+
+  // Fungsi untuk menghapus user
+  const handleDelete = async (userId) => {
+    if (window.confirm('Are you sure you want to delete this user?')) {
+      try {
+        await axios.delete(`/api/admin/users/${userId}`, {
+          headers: { Authorization: `Bearer ${token}` },
+        });
+        alert('User deleted successfully');
+        setUsers(users.filter((user) => user._id !== userId));
+      } catch (error) {
+        console.error('Failed to delete user:', error);
+        alert('Failed to delete user. Please try again.');
+      }
+    }
+  };
 
   return (
     <div>
@@ -70,7 +101,7 @@ const ManageUsers = () => {
                                                     <td>{user.username}</td>
                                                     <td>{user.name}</td>
                                                     <td>{user.role}</td>
-                                                    <td><button className="btn btn-danger btn-circle" onClick={() => deleteUser(user._id)}></button></td>
+                                                    <td><button className="btn btn-danger btn-circle" onClick={() => handleDelete(user._id)}></button></td>
                                                   </tr>
                                                 ))} 
                                                 </tbody>

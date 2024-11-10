@@ -11,6 +11,11 @@ const CMSLayout = () => {
     }
   }, [navigate]);
 
+  // Fungsi untuk kembali ke halaman root
+  const handleBackToRoot = () => {
+    navigate('/');
+  };
+
   return (
     <div className="cms-layout">
       <Outlet/>

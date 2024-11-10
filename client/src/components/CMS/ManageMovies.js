@@ -1,3 +1,4 @@
+// ManageMovies.js
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Navbar from './navbarcms';
@@ -5,22 +6,49 @@ import Header from './CMSHeader';
 
 const ManageMovies = () => {
   const [movies, setMovies] = useState([]);
+  const [selectedMovie, setSelectedMovie] = useState(null);
   const token = localStorage.getItem('token');
 
+  // Fetch daftar film dari backend
   useEffect(() => {
     const fetchMovies = async () => {
       try {
         const response = await axios.get('/api/admin/movies', {
-          headers: { Authorization: `Bearer ${token}` }
+          headers: { Authorization: `Bearer ${token}` },
         });
         setMovies(response.data);
       } catch (error) {
-        console.error("Error fetching movies:", error);
+        console.error('Error fetching movies:', error);
       }
     };
 
     fetchMovies();
   }, [token]);
+
+  // Fungsi untuk mengedit film
+  const handleEditMovie = (movie) => {
+    setSelectedMovie(movie);
+  };
+
+  // Fungsi untuk menyimpan perubahan
+  const handleSave = () => {
+    setSelectedMovie(null);
+    window.location.reload();
+  };
+
+  // Fungsi untuk menghapus film
+  const handleDeleteMovie = async (movieId) => {
+    try {
+      await axios.delete(`/api/admin/movies/${movieId}`, {
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      setMovies(movies.filter((movie) => movie._id !== movieId));
+      alert('Movie deleted successfully');
+    } catch (error) {
+      console.error('Failed to delete movie:', error);
+      alert('Failed to delete movie. Please try again.');
+    }
+  };
 
   return (
     <div>

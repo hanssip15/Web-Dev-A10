@@ -25,6 +25,7 @@ const userSchema = new mongoose.Schema({
   username: { type: String, unique: true, required: true },
   password: { type: String, required: true },
   role: { type: String, default: 'user' },
+  suspendUntil: { type: Date, default: null },
 });
 const User = mongoose.model('User', userSchema);
 
@@ -55,7 +56,8 @@ const movieSchema = new mongoose.Schema({
   actor: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Actor' }],
   releaseYear: Number,
   synopsis: String,
-  averageRating: Number
+  averageRating: Number,
+  awards: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Award' }]
 });
 const Movie = mongoose.model('Movie', movieSchema);
 
@@ -81,6 +83,15 @@ const movieRequestSchema = new mongoose.Schema({
 });
 const MovieRequest = mongoose.model('MovieRequest', movieRequestSchema);
 
+// Award Schema
+const awardSchema = new mongoose.Schema({
+  name: { type: String, required: true },
+  year: { type: Number, required: true },
+  category: { type: String, required: true },
+  movieId: { type: mongoose.Schema.Types.ObjectId, ref: 'Movie', required: true }
+});
+const Award = mongoose.model('Award', awardSchema);
+
 // Middleware untuk autentikasi token
 const authenticateToken = (req, res, next) => {
   const token = req.headers['authorization'];
@@ -91,6 +102,33 @@ const authenticateToken = (req, res, next) => {
     req.user = user; // Menyimpan user di request
     next();
   });
+};
+
+// Middleware untuk memeriksa apakah user sedang disuspend
+const checkUserSuspension = async (req, res, next) => {
+  const { username } = req.body;
+
+  try {
+    const user = await User.findOne({ username });
+    if (!user) {
+      // Jika pengguna tidak ditemukan
+      return res.status(400).json({ message: 'Username atau password salah.' });
+    }
+
+    // Cek apakah user sedang disuspend
+    if (user.suspendUntil && new Date() < new Date(user.suspendUntil)) {
+      const suspendEnd = new Date(user.suspendUntil).toLocaleString();
+      const timeLeft = Math.ceil((new Date(user.suspendUntil) - new Date()) / (1000 * 60)); // Waktu tersisa dalam menit
+      return res.status(403).json({
+        message: `Akun tersebut sedang disuspend sampai: ${suspendEnd}. Silakan coba lagi dalam ${timeLeft} menit.`,
+      });
+    }
+
+    // Lanjutkan jika user tidak disuspend
+    next();
+  } catch (error) {
+    res.status(500).json({ message: 'Error checking user suspension', error });
+  }
 };
 
 // Middleware untuk memeriksa role admin
@@ -197,11 +235,11 @@ app.get('/api/movies', async (req, res) => {
 // Endpoint untuk mendapatkan detail film berdasarkan title
 app.get('/api/movies/:title', async (req, res) => {
   try {
-    // Temukan film berdasarkan judul dan populasi country, genre, dan actor
     const movie = await Movie.findOne({ title: req.params.title })
       .populate('country', 'name')     // Mem-populate country hanya dengan nama
       .populate('genre', 'name')       // Mem-populate genre hanya dengan nama
-      .populate('actor', 'name');      // Mem-populate actor hanya dengan nama
+      .populate('actor', 'name')       // Mem-populate actor hanya dengan nama
+      .populate('awards', 'name year category'); // Mem-populate awards dengan field yang relevan
 
     if (!movie) {
       return res.status(404).json({ message: 'Movie not found' });
@@ -214,6 +252,40 @@ app.get('/api/movies/:title', async (req, res) => {
     res.json({ ...movie.toObject(), reviews });
   } catch (err) {
     res.status(500).json({ message: 'Error fetching movie details', error: err });
+  }
+});
+
+// Endpoint untuk mengedit detail film
+app.put('/api/admin/movies/:id', authenticateToken, authenticateAdmin, async (req, res) => {
+  const { title, country, genre, actor, releaseYear, synopsis } = req.body;
+
+  try {
+    // Validasi aktor: Pastikan aktor yang dimasukkan ada dalam database
+    const existingActors = await Actor.find();
+    const validActorIds = existingActors.map(a => a._id.toString());
+    const invalidActors = actor.filter(id => !validActorIds.includes(id));
+
+    // Jika ada aktor yang tidak valid, kirim respons dengan daftar aktor yang tidak ditemukan
+    if (invalidActors.length > 0) {
+      return res.status(400).json({
+        message: 'Some actors do not exist in the database',
+        invalidActors
+      });
+    }
+
+    // Update film dengan data yang sudah divalidasi
+    const updatedMovie = await Movie.findByIdAndUpdate(
+      req.params.id,
+      { title, country, genre, actor, releaseYear, synopsis },
+      { new: true }
+    )
+      .populate('country', 'name')
+      .populate('genre', 'name')
+      .populate('actor', 'name');
+
+    res.json(updatedMovie);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update movie', error });
   }
 });
 
@@ -269,13 +341,13 @@ app.get('/api/genres', async (req, res) => {
   }
 });
 
-// Endpoint untuk mendapatkan semua actors
-app.get('/api/actors', async (req, res) => {
+// Endpoint untuk mendapatkan semua aktor
+app.get('/api/actors', authenticateToken, authenticateAdmin, async (req, res) => {
   try {
     const actors = await Actor.find();
     res.json(actors);
-  } catch (err) {
-    res.status(500).json({ message: 'Error fetching actors', error: err });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch actors', error });
   }
 });
 
@@ -297,9 +369,9 @@ app.post('/api/register', async (req, res) => {
   }
 });
 
-app.post('/api/login', async (req, res) => {
+// Endpoint login dengan pengecekan suspend user
+app.post('/api/login', checkUserSuspension, async (req, res) => {
   const { username, password } = req.body;
-
   try {
     const user = await User.findOne({ username });
     if (!user) return res.status(400).json({ message: 'Invalid username or password' });
@@ -307,16 +379,17 @@ app.post('/api/login', async (req, res) => {
     const isMatch = await bcrypt.compare(password, user.password);
     if (!isMatch) return res.status(400).json({ message: 'Invalid username or password' });
 
-    // Menyertakan role dalam payload token
+    // Buat token JWT dengan menyertakan role
     const token = jwt.sign(
-      { userId: user._id, username: user.username, role: user.role }, // Tambahkan `role` di sini
+      { userId: user._id, role: user.role },
       'secretkey',
       { expiresIn: '1h' }
     );
 
-    res.json({ token, role: user.role }); // Kirimkan `role` juga ke frontend
-  } catch (err) {
-    res.status(500).json({ message: 'Error logging in', error: err });
+    // Kirimkan token dan role ke frontend
+    res.json({ token, role: user.role });
+  } catch (error) {
+    res.status(500).json({ message: 'Error logging in', error });
   }
 });
 
@@ -372,23 +445,199 @@ app.delete('/api/admin/reviews/:id', authenticateToken, authenticateAdmin, async
   }
 });
 
-// Endpoint untuk mendapatkan semua user
+// Endpoint untuk mendapatkan daftar user (kecuali user yang sedang login)
 app.get('/api/admin/users', authenticateToken, authenticateAdmin, async (req, res) => {
   try {
-    const users = await User.find().select('-password'); // Jangan mengirim password
-    res.json(users);
+    const currentUserId = req.user.userId;
+    const currentUser = await User.findById(currentUserId).select('name username _id');
+    const users = await User.find({ _id: { $ne: currentUserId } }).select('-password');
+    res.json({ currentUser, users });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch users', error });
   }
 });
 
-// Endpoint untuk menghapus user berdasarkan ID
+// Endpoint untuk menghapus akun user berdasarkan ID
 app.delete('/api/admin/users/:id', authenticateToken, authenticateAdmin, async (req, res) => {
   try {
-    await User.findByIdAndDelete(req.params.id);
+    const userId = req.params.id;
+    const currentUserId = req.user.userId;
+
+    // Cegah admin menghapus akun yang sedang digunakan
+    if (userId === currentUserId) {
+      return res.status(400).json({ message: "You cannot delete the currently logged-in account." });
+    }
+
+    // Hapus user dari database
+    const deletedUser = await User.findByIdAndDelete(userId);
+
+    // Jika user tidak ditemukan
+    if (!deletedUser) {
+      return res.status(404).json({ message: "User not found." });
+    }
+
     res.json({ message: 'User deleted successfully' });
   } catch (error) {
+    console.error('Error deleting user:', error);
     res.status(500).json({ message: 'Failed to delete user', error });
+  }
+});
+
+// Suspend User
+app.put('/api/admin/users/:id/suspend', authenticateToken, authenticateAdmin, async (req, res) => {
+  const { duration } = req.body;
+  const suspendDurations = {
+    '1h': 1,
+    '3h': 3,
+    '6h': 6,
+    '12h': 12,
+    '1d': 24,
+    '2d': 48,
+    '3d': 72,
+  };
+
+  if (!suspendDurations[duration]) {
+    return res.status(400).json({ message: 'Invalid suspension duration' });
+  }
+
+  const suspendUntil = new Date();
+  suspendUntil.setHours(suspendUntil.getHours() + suspendDurations[duration]);
+
+  try {
+    await User.findByIdAndUpdate(req.params.id, { suspendUntil });
+    res.json({ message: `User suspended for ${duration}` });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to suspend user', error });
+  }
+});
+
+// Unsuspend User
+app.put('/api/admin/users/:id/unsuspend', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    await User.findByIdAndUpdate(req.params.id, { suspendUntil: null });
+    res.json({ message: 'User unsuspended successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to unsuspend user', error });
+  }
+});
+
+// Endpoint untuk mendapatkan semua aktor
+app.get('/api/admin/actors', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    const actors = await Actor.find();
+    res.json(actors);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch actors', error });
+  }
+});
+
+// Endpoint untuk menambahkan aktor baru
+app.post('/api/admin/actors', authenticateToken, authenticateAdmin, async (req, res) => {
+  const { name } = req.body;
+  try {
+    const newActor = new Actor({ name });
+    await newActor.save();
+    res.status(201).json({ message: 'Actor added successfully', actor: newActor });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to add actor', error });
+  }
+});
+
+// Endpoint untuk memperbarui aktor berdasarkan ID
+app.put('/api/admin/actors/:id', authenticateToken, authenticateAdmin, async (req, res) => {
+  const { name } = req.body;
+  try {
+    const updatedActor = await Actor.findByIdAndUpdate(req.params.id, { name }, { new: true });
+    res.json({ message: 'Actor updated successfully', actor: updatedActor });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update actor', error });
+  }
+});
+
+// Endpoint untuk menghapus aktor berdasarkan ID
+app.delete('/api/admin/actors/:id', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    await Actor.findByIdAndDelete(req.params.id);
+    res.json({ message: 'Actor deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete actor', error });
+  }
+});
+
+/// Endpoint untuk menambahkan penghargaan baru
+app.post('/api/admin/awards', authenticateToken, authenticateAdmin, async (req, res) => {
+  const { name, year, category, movieId } = req.body;
+
+  // Validasi input
+  if (!name || !year || !category || !movieId) {
+    return res.status(400).json({ message: 'All fields are required' });
+  }
+
+  try {
+    const newAward = new Award({ name, year, category, movieId });
+    await newAward.save();
+
+    // Update movie dengan menambahkan award
+    await Movie.findByIdAndUpdate(movieId, { $push: { awards: newAward._id } });
+
+    res.status(201).json(newAward);
+  } catch (error) {
+    console.error('Failed to create award:', error);
+    res.status(500).json({ message: 'Failed to create award', error });
+  }
+});
+
+// Endpoint untuk mendapatkan semua penghargaan
+app.get('/api/admin/awards', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    const awards = await Award.find().populate('movieId', 'title');
+    res.json(awards);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to fetch awards', error });
+  }
+});
+
+// Endpoint untuk mengupdate penghargaan
+app.put('/api/admin/awards/:id', authenticateToken, authenticateAdmin, async (req, res) => {
+  const { name, year, category, movieId } = req.body;
+
+  try {
+    const existingAward = await Award.findById(req.params.id);
+    const oldMovieId = existingAward.movieId.toString();
+
+    // Perbarui penghargaan
+    const updatedAward = await Award.findByIdAndUpdate(
+      req.params.id,
+      { name, year, category, movieId },
+      { new: true }
+    ).populate('movieId', 'title');
+
+    // Jika movieId diubah, perbarui koleksi film
+    if (oldMovieId !== movieId) {
+      await Movie.findByIdAndUpdate(oldMovieId, { $pull: { awards: req.params.id } });
+      await Movie.findByIdAndUpdate(movieId, { $push: { awards: req.params.id } });
+    }
+
+    res.json(updatedAward);
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to update award', error });
+  }
+});
+
+// Endpoint untuk menghapus penghargaan
+app.delete('/api/admin/awards/:id', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    const awardId = req.params.id;
+    const award = await Award.findByIdAndDelete(awardId);
+
+    // Hapus penghargaan dari koleksi film yang terkait
+    if (award) {
+      await Movie.findByIdAndUpdate(award.movieId, { $pull: { awards: awardId } });
+    }
+
+    res.json({ message: 'Award deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete award', error });
   }
 });
 
