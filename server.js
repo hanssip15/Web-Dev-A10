@@ -449,13 +449,14 @@ app.delete('/api/admin/reviews/:id', authenticateToken, authenticateAdmin, async
 app.get('/api/admin/users', authenticateToken, authenticateAdmin, async (req, res) => {
   try {
     const currentUserId = req.user.userId;
-    const currentUser = await User.findById(currentUserId).select('name username _id');
+    const currentUser = await User.findById(currentUserId).select('name username _id role');
     const users = await User.find({ _id: { $ne: currentUserId } }).select('-password');
     res.json({ currentUser, users });
   } catch (error) {
     res.status(500).json({ message: 'Failed to fetch users', error });
   }
 });
+
 
 // Endpoint untuk menghapus akun user berdasarkan ID
 app.delete('/api/admin/users/:id', authenticateToken, authenticateAdmin, async (req, res) => {

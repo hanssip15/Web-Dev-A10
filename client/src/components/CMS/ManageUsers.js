@@ -3,7 +3,7 @@ import axios from 'axios';
 
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
-  const [currentUserId, setCurrentUserId] = useState('');
+  const [currentUser, setCurrentUser] = useState(null);
   const token = localStorage.getItem('token');
 
   // Fetch daftar user
@@ -13,7 +13,7 @@ const ManageUsers = () => {
         const response = await axios.get('/api/admin/users', {
           headers: { Authorization: `Bearer ${token}` },
         });
-        setCurrentUserId(response.data.currentUserId);
+        setCurrentUser(response.data.currentUser);
         setUsers(response.data.users);
       } catch (error) {
         console.error('Error fetching users:', error);
@@ -67,16 +67,30 @@ const ManageUsers = () => {
     }
   };
 
-  const currentUserInfo = (
-    <p>
-      <strong>Akun yang sedang dipakai:</strong> {currentUserId}
-    </p>
+  // Menampilkan informasi akun yang sedang dipakai
+  const currentUserInfo = currentUser && (
+    <div>
+      <ul>
+        <p>
+          <strong>Nama:</strong> {currentUser.name}
+        </p>
+        <p>
+          <strong>Username:</strong> {currentUser.username}
+        </p>
+        <p>
+          <strong>ID:</strong> {currentUser._id}
+        </p>
+      </ul>
+    </div>
   );
 
   return (
     <div>
       <h2>Manage Users</h2>
       {currentUserInfo}
+      <p>
+        <strong>List Akun:</strong>
+      </p>
       {users.length > 0 ? (
         <ul>
           {users.map((user) => (
