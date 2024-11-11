@@ -98,8 +98,38 @@ const ManageActors = () => {
                             <div className='container-fluid'>
                                 <h1 className='h3 mb-2 text-gray-800'>Manage Actors</h1>
                                 <div class="card shadow mb-4">
+                                  <div class="card-header py-3">
+                                      <h6 class="m-0 font-weight-bold text-primary">Add New Actor</h6>
+                                  </div>
+                                  <div className="card-body">
+                                      <div className="table-responsive">
+                                        <table className="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                          <thead>
+                                            <tr>
+                                              <th>Actor Name</th>
+                                              <th>Action</th>
+                                            </tr>
+                                          </thead>
+                                          <tbody>
+                                            <td>
+                                              <input
+                                              type="text"
+                                              placeholder="Enter actor name"
+                                              value={newActorName}
+                                              onChange={(e) => setNewActorName(e.target.value)}
+                                              />
+                                            </td>
+                                            <td>
+                                              <button onClick={addActor}>Add Actor</button>
+                                            </td>
+                                          </tbody>
+                                        </table>
+                                    </div>
+                                  </div>
+                                </div>
+                                <div class="card shadow mb-4">
                                     <div class="card-header py-3">
-                                        <h6 class="m-0 font-weight-bold text-primary">DataTables</h6>
+                                        <h6 class="m-0 font-weight-bold text-primary">List Actor</h6>
                                     </div>
                                     <div className="card-body">
                                         <div className="table-responsive">
