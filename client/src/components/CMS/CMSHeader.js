@@ -1,4 +1,5 @@
 import './sb-admin-2.css';
+import 'bootstrap';
 
 function Header() {
     return (

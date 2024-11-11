@@ -58,7 +58,7 @@ const LoginRegister = () => {
         // Form registrasi
         <form className="login-form" onSubmit={handleRegisterSubmit}>
           <h2>Registrasi</h2>
-          {error && <p className="error">{error}</p>}
+          {error && <p>{error}</p>}
           {successMessage && <p className="success">{successMessage}</p>}
           <div className="form-group">
             <label>Nama</label>
@@ -102,7 +102,7 @@ const LoginRegister = () => {
         // Form login
         <form className="login-form" onSubmit={handleLoginSubmit}>
           <h2>Login</h2>
-          {error && <p className="error">{error}</p>}
+          {error && <h4 className="error">{error}</h4>}
           <div className="form-group">
             <label>Username</label>
             <input

@@ -54,7 +54,7 @@ function HomePage() {
         )}
       </div>
       <div class="next-film">
-            <upnext>All Movie</upnext>
+            <upnext>Popular Movie</upnext>
             <ul class='movie-list'>
               {movies.map((movie, index) => (
               <li key={index} class= 'movie-item'>

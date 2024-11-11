@@ -65,7 +65,7 @@ language {
     /* margin-left: 40px; */
     font-weight: bold;
 }
-header {
+/* header {
     background-color: #1a1a1a;
     width: 100%;
     color: #ffffff;
@@ -73,7 +73,7 @@ header {
     padding: 7px 7px;
     display: flex;
     align-items: center;
-}
+} */
 body {
     background-color: #000000;
     color: #ffffff;
@@ -161,7 +161,7 @@ body {
 }
 .next-film {
 
-    margin-top: 340px;
+    margin-top: 400px;
     text-align: center;
 }
 .square {
@@ -373,3 +373,79 @@ ul {
     list-style: none;
     gap: 15px; /* Jarak antar film */
   }
+  header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #333; /* Sesuaikan dengan tema warna */
+    padding: 10px 20px;
+    color: white;
+}
+
+/* Logo styling */
+header .custom-link {
+    font-size: 1.5em;
+    font-weight: bold;
+    color: white;
+    text-decoration: none;
+}
+
+/* Dropdown menu styling */
+header .dropdown {
+    margin-right: 10px;
+}
+
+header .btn-danger {
+    background-color: #e74c3c;
+    border: none;
+}
+
+/* Search bar styling */
+header .search-container {
+    display: flex;
+    align-items: center;
+    flex-grow: 1;
+    max-width: 500px;
+    margin: 0 20px;
+}
+
+header .search-input {
+    width: 100%;
+    padding: 5px 10px;
+    border: 1px solid #ccc;
+    border-radius: 4px 0 0 4px;
+    outline: none;
+}
+
+header .search-button {
+    padding: 5px 15px;
+    background-color: #e74c3c;
+    border: none;
+    color: white;
+    cursor: pointer;
+    border-radius: 0 4px 4px 0;
+}
+
+/* Watchlist dan Language */
+header watchlist, header language {
+    margin: 0 15px;
+    cursor: pointer;
+}
+
+/* Sign in/Sign out button styling */
+header .signin-container {
+    margin-left: 15px;
+}
+
+header .signout-button, header .signin-link {
+    padding: 5px 15px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    text-decoration: none;
+}
+
+header .signout-button:hover, header .signin-link:hover {
+    background-color: #2980b9;
+}

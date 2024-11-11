@@ -289,6 +289,17 @@ app.put('/api/admin/movies/:id', authenticateToken, authenticateAdmin, async (re
   }
 });
 
+// Endpoint untuk menghapus film berdasarkan ID
+app.delete('/api/admin/movies/:id', authenticateToken, authenticateAdmin, async (req, res) => {
+  try {
+    const movieId = req.params.id;
+    await Movie.findByIdAndDelete(movieId);
+    res.json({ message: 'Movie deleted successfully' });
+  } catch (error) {
+    res.status(500).json({ message: 'Failed to delete movie', error });
+  }
+});
+
 app.post('/api/movies/rate', authenticateToken, async (req, res) => {
   const { title, rating, reviewText } = req.body;
 

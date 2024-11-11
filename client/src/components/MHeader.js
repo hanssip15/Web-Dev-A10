@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
 import { useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
+import 'bootstrap';
 
 function MHeader() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -40,21 +41,7 @@ function MHeader() {
       <header>
         <link rel="stylesheet" href="/css/style.css"></link>
         <logo><Link to={'/'} className='custom-link'>MovieReview</Link></logo>
-        <div className="dropdown">
-          <button className="btn btn-danger dropdown-toggle" type="button" id="menuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
-            Menu
-          </button>
-          <ul className="dropdown-menu" aria-labelledby="menuDropdown">
-            <li><Link className="dropdown-item" to="/trending">Trending Movies</Link></li>
-            <li><Link className="dropdown-item" to="/new-releases">New Releases</Link></li>
-            {isAdmin && (
-              <li><Link className="dropdown-item" to="/admin/dashboard">Admin Dashboard</Link></li> // Link ke CMS admin
-            )}
-            {isLoggedIn && (
-              <li><Link className="dropdown-item" to="/request-movie">Request a Movie</Link></li>
-            )}
-          </ul>
-        </div>
+
         <div className="search-container">
           <input
             type="text"
@@ -65,7 +52,21 @@ function MHeader() {
           />
           <button onClick={handleSearch} className="search-button">Search</button>
         </div>
-        <watchlist>Watchlist</watchlist>
+        <div className="dropdown">
+          <button className="btn btn-danger dropdown-toggle" type="button" id="menuDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+            Menu
+          </button>
+          <ul className="dropdown-menu" aria-labelledby="menuDropdown">
+            <li><Link className="dropdown-item" to="/trending">Trending Movies</Link></li>
+            <li><Link className="dropdown-item" to="/new-releases">New Releases</Link></li>
+            {isLoggedIn && (
+              <li><Link className="dropdown-item" to="/request-movie">Request a Movie</Link></li>
+            )}
+            {isAdmin && (
+              <li><Link className="dropdown-item" to="/admin/dashboard">Admin Dashboard</Link></li> // Link ke CMS admin
+            )}
+          </ul>
+        </div>
         <div className="signin-container">
           {isLoggedIn ? (
             <button className="signout-button" onClick={handleSignOut}>Sign Out</button>

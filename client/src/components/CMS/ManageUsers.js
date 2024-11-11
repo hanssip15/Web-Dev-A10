@@ -73,14 +73,15 @@ const ManageUsers = () => {
   // Menampilkan informasi akun yang sedang dipakai
   const currentUserInfo = currentUser && (
     <div>
+      <p>
+        <strong>Akun yang sekarang digunakan:</strong>
+      </p>
       <ul>
         <p>
           <strong>Nama:</strong> {currentUser.name}
-        </p>
-        <p>
+          <br/>
           <strong>Username:</strong> {currentUser.username}
-        </p>
-        <p>
+          <br/>
           <strong>ID:</strong> {currentUser._id}
         </p>
       </ul>
@@ -128,7 +129,7 @@ const ManageUsers = () => {
                                                     <td>{user.name}</td>
                                                     <td>{user.role}</td>
                                                     <td>
-                                                      {user.suspendUntil && user.suspendUntil > new Date() ? (
+                                                      {user.suspendUntil ? (
                                                         `Suspended Until: ${new Date(user.suspendUntil).toLocaleString()}`
                                                       ) : (
                                                         "Active"
