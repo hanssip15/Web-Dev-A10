@@ -147,6 +147,51 @@ const ManageAwards = () => {
                             <Header/>
                             <div className='container-fluid'>
                                 <h1 className='h3 mb-2 text-gray-800'>Manage Awards</h1>
+                                <div>
+                                  <h3>{isEditing ? 'Edit Award' : 'Add Award'}</h3>
+                                  <input
+                                    type="text"
+                                    placeholder="Award Name"
+                                    value={name}
+                                    onChange={(e) => setName(e.target.value)}
+                                  />
+                                  <input
+                                    type="number"
+                                    placeholder="Year"
+                                    value={year}
+                                    onChange={(e) => setYear(e.target.value)}
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="Category"
+                                    value={category}
+                                    onChange={(e) => setCategory(e.target.value)}
+                                  />
+                                  <input
+                                    type="text"
+                                    placeholder="Search Movie"
+                                    value={searchMovie}
+                                    onChange={(e) => setSearchMovie(e.target.value)}
+                                  />
+                                  {movieSuggestions.length > 0 && (
+                                    <ul>
+                                      {movieSuggestions.map((movie) => (
+                                        <li key={movie._id}>
+                                          {movie.title}
+                                          <button onClick={() => handleSelectMovie(movie)}>Select</button>
+                                        </li>
+                                      ))}
+                                    </ul>
+                                  )}
+                                  {selectedMovie && (
+                                    <p>
+                                      Selected Movie: <strong>{selectedMovie.title}</strong>
+                                      <button onClick={handleRemoveMovie}>Remove</button>
+                                    </p>
+                                  )}
+                                  <button onClick={handleSave}>{isEditing ? 'Update Award' : 'Add Award'}</button>
+                                  {isEditing && <button onClick={() => setIsEditing(false)}>Cancel</button>}
+                                </div>
                                 <div class="card shadow mb-4">
                                     <div class="card-header py-3">
                                         <h6 class="m-0 font-weight-bold text-primary">DataTables</h6>
@@ -166,16 +211,21 @@ const ManageAwards = () => {
                                                         <th>Award Name</th>
                                                         <th>Year</th>
                                                         <th>Category</th>
+                                                        <th>Movie</th>
                                                         <th>Action</th>
                                                     </tr>
                                                 </thead>
                                                 <tbody>
                                                 {awards.map(award => (
                                                   <tr key={award._id}>
-                                                    <td>{award.title}</td>
-                                                    <td>{award.releaseYear}</td>
+                                                    <td>{award.name}</td>
+                                                    <td>{award.year}</td>
                                                     <td>{award.category}</td>
-                                                    <td><button onClick={() => handleEdit(award._id)}> Edit</button><button onClick={() => handleSave(award._id)}> Edit</button><button onClick={() => handleDelete(award._id)}> Delete</button></td>
+                                                    <td>{award.movieId?.title || 'Unknown'}</td>
+                                                    <td>
+                                                      <button onClick={() => handleEdit(award)}>Edit</button>
+                                                      <button onClick={() => handleDelete(award._id)}>Delete</button>
+                                                    </td>
                                                   </tr>
                                                 ))} 
                                                 </tbody>

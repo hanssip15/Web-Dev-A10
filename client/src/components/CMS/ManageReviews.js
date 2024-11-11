@@ -68,7 +68,6 @@ const ManageReviews = () => {
                                                     <tr>
                                                         <th>Username</th>
                                                         <th>Movie</th>
-                                                        <th>Genre</th>
                                                         <th>Rating</th>
                                                         <th>Review</th>
                                                         <th>Action</th>

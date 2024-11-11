@@ -3,6 +3,7 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import Navbar from './navbarcms';
 import Header from './CMSHeader';
+import EditMovieForm from './EditMovieForm';
 
 const ManageMovies = () => {
   const [movies, setMovies] = useState([]);
@@ -60,6 +61,13 @@ const ManageMovies = () => {
                             <Header/>
                             <div className='container-fluid'>
                                 <h1 className='h3 mb-2 text-gray-800'>Manage Movie</h1>
+                                {selectedMovie && (
+                                  <EditMovieForm
+                                    movie={selectedMovie}
+                                    onClose={() => setSelectedMovie(null)}
+                                    onSave={handleSave}
+                                  />
+                                )}
                                 <div class="card shadow mb-4">
                                     <div class="card-header py-3">
                                         <h6 class="m-0 font-weight-bold text-primary">DataTables</h6>
@@ -94,7 +102,10 @@ const ManageMovies = () => {
                                                     <td>{movie.actor.map(a => a.name).join(", ")}</td>
                                                     <td>{movie.releaseYear}</td>
                                                     <td>{movie.averageRating}</td>
-                                                    <td><button onClick={() => handleEditMovie(movie._id)}> Edit</button> <button onClick={() => handleDeleteMovie(movie._id)}> Delete</button></td>
+                                                    <td>
+                                                      <button onClick={() => handleEditMovie(movie)}>Edit</button>
+                                                      <button onClick={() => handleDeleteMovie(movie._id)}>Delete</button>
+                                                    </td>
                                                   </tr>
                                                 ))} 
                                                 </tbody>

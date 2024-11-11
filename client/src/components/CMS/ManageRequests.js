@@ -82,7 +82,10 @@ function ManageRequests() {
                                                 {requests.map(request => (
                                                   <tr key={request._id}>
                                                     <td>{request.title}</td>
-                                                    <td><button onClick={() => handleApprove(request._id)}>Approve</button> <button onClick={() => handleReject(request._id)}>Reject</button> </td>
+                                                    <td>
+                                                      <button onClick={() => handleApprove(request._id)}>Approve</button>
+                                                      <button onClick={() => handleReject(request._id)}>Reject</button>
+                                                    </td>
                                                   </tr>
                                                 ))} 
                                                 </tbody>

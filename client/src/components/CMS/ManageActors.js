@@ -118,10 +118,35 @@ const ManageActors = () => {
                                                     </tr>
                                                 </thead>
                                                 <tbody>
-                                                {actors.map(actor => (
+                                                
+                                                {actors.map((actor) => (
                                                   <tr key={actor._id}>
-                                                    <td>{actor.name}</td>
-                                                    <td><button onClick={() => updateActor(actor._id)}>Edit</button><button onClick={() => addActor(actor._id)}> Add</button><button onClick={() => deleteActor(actor._id)}> Delete</button></td>
+                                                  {editingActor === actor._id ? (
+                                                    <>
+                                                      <td>
+                                                      <input
+                                                        type="text"
+                                                        value={editingName}
+                                                        onChange={(e) => setEditingName(e.target.value)}
+                                                      />
+                                                      </td>
+                                                      <td>
+                                                        <button onClick={() => updateActor(actor._id)}>Save</button>
+                                                        <button onClick={() => setEditingActor(null)}>Cancel</button>
+                                                      </td>
+                                                    </>
+                                                  ) : (
+                                                    <>
+                                                      <td>{actor.name}</td>
+                                                      <td>
+                                                        <button onClick={() => {
+                                                          setEditingActor(actor._id);
+                                                          setEditingName(actor.name);
+                                                        }}>Edit</button>
+                                                        <button onClick={() => deleteActor(actor._id)}>Delete</button>
+                                                      </td>
+                                                    </>
+                                                  )}
                                                   </tr>
                                                 ))} 
                                                 </tbody>
