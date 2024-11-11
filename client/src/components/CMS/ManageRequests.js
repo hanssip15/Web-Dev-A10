@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Navbar from './navbarcms';
+import Header from './CMSHeader';
 
 function ManageRequests() {
   const [requests, setRequests] = useState([]);
@@ -48,14 +50,51 @@ function ManageRequests() {
 
   return (
     <div>
-      <h1>Manage Requests</h1>
-      {requests.map(request => (
-        <div key={request._id}>
-          <h3>{request.title}</h3>
-          <button onClick={() => handleApprove(request._id)}>Approve</button>
-          <button onClick={() => handleReject(request._id)}>Reject</button>
-        </div>
-      ))}
+        <body id='page-top'>
+            <div id='wrapper'>
+                    <Navbar/>
+                    <div id="content-wrapper" class="d-flex flex-column">
+                        <div id='content'>
+                            <Header/>
+                            <div className='container-fluid'>
+                                <h1 className='h3 mb-2 text-gray-800'>Manage Request</h1>
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">DataTables</h6>
+                                    </div>
+                                    <div className="card-body">
+                                        <div className="table-responsive">
+                                        <div class="dataTables_length" id="dataTable_length">
+                                          <label>
+                                            Show Entries<select name="dataTable_length" aria-controls="dataTable" class="custom-select custom-select-sm form-control form-control-sm">
+                                              <option value="5">5</option><option value="25">25</option><option value="50">50</option><option value="100">100</option>
+                                              </select> 
+                                          </label>
+                                        </div>
+                                            <table className="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Movie Name</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                {requests.map(request => (
+                                                  <tr key={request._id}>
+                                                    <td>{request.title}</td>
+                                                    <td><button onClick={() => handleApprove(request._id)}>Approve</button> <button onClick={() => handleReject(request._id)}>Reject</button> </td>
+                                                  </tr>
+                                                ))} 
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </body>
     </div>
   );
 }

@@ -1,5 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Navbar from './navbarcms';
+import Header from './CMSHeader';
 
 const ManageActors = () => {
   const [actors, setActors] = useState([]); // Menyimpan daftar aktor
@@ -87,52 +89,51 @@ const ManageActors = () => {
 
   return (
     <div>
-      <h2>Manage Actors</h2>
-
-      {/* Form untuk menambahkan aktor baru */}
-      <div style={{ marginBottom: '20px' }}>
-        <h3>Add New Actor</h3>
-        <input
-          type="text"
-          placeholder="Enter actor name"
-          value={newActorName}
-          onChange={(e) => setNewActorName(e.target.value)}
-        />
-        <button onClick={addActor}>Add Actor</button>
-      </div>
-
-      {/* Daftar aktor */}
-      <h3>List of Actors</h3>
-      {actors.length > 0 ? (
-        <ul>
-          {actors.map((actor) => (
-            <li key={actor._id} style={{ marginBottom: '10px' }}>
-              {editingActor === actor._id ? (
-                <>
-                  <input
-                    type="text"
-                    value={editingName}
-                    onChange={(e) => setEditingName(e.target.value)}
-                  />
-                  <button onClick={() => updateActor(actor._id)}>Save</button>
-                  <button onClick={() => setEditingActor(null)}>Cancel</button>
-                </>
-              ) : (
-                <>
-                  <span>{actor.name}</span>
-                  <button onClick={() => {
-                    setEditingActor(actor._id);
-                    setEditingName(actor.name);
-                  }}>Edit</button>
-                  <button onClick={() => deleteActor(actor._id)}>Delete</button>
-                </>
-              )}
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No actors found.</p>
-      )}
+        <body id='page-top'>
+            <div id='wrapper'>
+                    <Navbar/>
+                    <div id="content-wrapper" class="d-flex flex-column">
+                        <div id='content'>
+                            <Header/>
+                            <div className='container-fluid'>
+                                <h1 className='h3 mb-2 text-gray-800'>Manage Actors</h1>
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">DataTables</h6>
+                                    </div>
+                                    <div className="card-body">
+                                        <div className="table-responsive">
+                                        <div class="dataTables_length" id="dataTable_length">
+                                          <label>
+                                            Show Entries<select name="dataTable_length" aria-controls="dataTable" class="custom-select custom-select-sm form-control form-control-sm">
+                                              <option value="5">5</option><option value="25">25</option><option value="50">50</option><option value="100">100</option>
+                                              </select> 
+                                          </label>
+                                        </div>
+                                            <table className="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Actor Name</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                {actors.map(actor => (
+                                                  <tr key={actor._id}>
+                                                    <td>{actor.name}</td>
+                                                    <td><button onClick={() => updateActor(actor._id)}>Edit</button><button onClick={() => addActor(actor._id)}> Add</button><button onClick={() => deleteActor(actor._id)}> Delete</button></td>
+                                                  </tr>
+                                                ))} 
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </body>
     </div>
   );
 };

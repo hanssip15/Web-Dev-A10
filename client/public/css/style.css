@@ -31,8 +31,7 @@ upnext {
     color: #eada28;
     text-align: left;
     font-size: 20px;
-    margin-top: 5vw;
-    margin-left: 60vw;
+    margin-top: 6vw;
     margin-right: 8px;
     /* margin-left: 10px; */
     font-weight: bold;
@@ -150,7 +149,6 @@ body {
     border: none;
     border-radius: 15px;
     box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    display: block;
 }
 .gradient-overlay {
     position: absolute; 
@@ -162,8 +160,9 @@ body {
     pointer-events: none; 
 }
 .next-film {
-    display: flex;
-    flex-direction: column;
+
+    margin-top: 340px;
+    text-align: center;
 }
 .square {
     /* margin-top: 20px; */
@@ -175,18 +174,19 @@ body {
 }
 .styled-image-preview {
     /* margin-top: 20px; */
-    margin-left: 17px;
-    width: 100px; 
-    height: 150px; 
+    width: 150px; 
+    height: 225px; 
     border: none;
-    border-radius: 15px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.3);
-    display: block;
+    border-radius: 8px;
+    box-shadow: 5px rgba(0, 0, 0, 0.3);
+    object-fit: contain;
 }
 .item {
-    margin-left: 60vw;
     display: flex;
-}
+    flex-direction: column;
+    align-items: center;
+    flex-shrink: 0;
+  }
 p {
     color: #ffffff;
     text-align: left;
@@ -279,11 +279,10 @@ subtitle {
 }
 .play-mtitle {
     color: #ffffff;
-    text-align: left;
+    text-align: center;
     font-weight: bold;
     font-size: 20px;
     margin-top: 1vw;
-    display: flex;
     flex-direction: column;
 }
 
@@ -294,8 +293,9 @@ subtitle {
 }
 
 ul {
-    list-style-type: none;
+    list-style: none;
     padding: 0;
+    gap: 15;
 }
 
 .movie-details {
@@ -348,3 +348,28 @@ ul {
     color: #9b9b9b; /* Warna saat hover */
     text-decoration: underline;
 }
+
+.movie-list {
+    display: flex;
+    flex-wrap: wrap;
+    overflow-x: auto; /* Scroll secara horizontal jika banyak item */
+    padding: 0;
+    list-style: none;
+    margin: 0;
+    justify-content: center;
+  }
+
+  .movie-item {
+    flex: 0 0 auto; /* Item akan berada di samping satu sama lain */
+    margin: 10px;
+    text-align: center; /* Pusatkan teks di bawah gambar */
+  }
+
+  .next-film ul {
+    display: flex;
+    overflow-x: auto; /* Menambahkan scroll horizontal jika diperlukan */
+    padding: 0;
+    margin: 0;
+    list-style: none;
+    gap: 15px; /* Jarak antar film */
+  }

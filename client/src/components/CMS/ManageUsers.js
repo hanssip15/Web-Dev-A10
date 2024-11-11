@@ -1,5 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
+import Navbar from './navbarcms';
+import Header from './CMSHeader';
+
 
 const ManageUsers = () => {
   const [users, setUsers] = useState([]);
@@ -86,46 +89,76 @@ const ManageUsers = () => {
 
   return (
     <div>
-      <h2>Manage Users</h2>
-      {currentUserInfo}
-      <p>
-        <strong>List Akun:</strong>
-      </p>
-      {users.length > 0 ? (
-        <ul>
-          {users.map((user) => (
-            <li key={user._id}>
-              <p>
-                <strong>Username:</strong> {user.username}
-              </p>
-              <p>
-                <strong>Role:</strong> {user.role}
-              </p>
-              <p>
-                <strong>Status:</strong> {user.suspendUntil ? 'Suspended' : 'Active'}
-              </p>
-              {user.suspendUntil && (
-                <p>
-                  <strong>Suspended Until:</strong> {new Date(user.suspendUntil).toLocaleString()}
-                </p>
-              )}
-              <button onClick={() => handleSuspend(user._id, '1h')}>Suspend 1 Hour</button>
-              <button onClick={() => handleSuspend(user._id, '3h')}>Suspend 3 Hours</button>
-              <button onClick={() => handleSuspend(user._id, '6h')}>Suspend 6 Hours</button>
-              <button onClick={() => handleSuspend(user._id, '12h')}>Suspend 12 Hours</button>
-              <button onClick={() => handleSuspend(user._id, '1d')}>Suspend 1 Day</button>
-              <button onClick={() => handleSuspend(user._id, '2d')}>Suspend 2 Days</button>
-              <button onClick={() => handleSuspend(user._id, '3d')}>Suspend 3 Days</button>
-              <button onClick={() => handleUnsuspend(user._id)}>Unsuspend</button>
-              <button onClick={() => handleDelete(user._id)} style={{ color: 'red' }}>
-                Delete User
-              </button>
-            </li>
-          ))}
-        </ul>
-      ) : (
-        <p>No other users found.</p>
-      )}
+        <body id='page-top'>
+            <div id='wrapper'>
+                    <Navbar/>
+                    <div id="content-wrapper" class="d-flex flex-column">
+                        <div id='content'>
+                            <Header/>
+                            <div className='container-fluid'>
+                                <h1 className='h3 mb-2 text-gray-800'>Manage Users</h1>
+                                {currentUserInfo}
+                                <div class="card shadow mb-4">
+                                    <div class="card-header py-3">
+                                        <h6 class="m-0 font-weight-bold text-primary">DataTables</h6>
+                                    </div>
+                                    <div className="card-body">
+                                        <div className="table-responsive">
+                                        <div class="dataTables_length" id="dataTable_length">
+                                          <label>
+                                            Show Entries<select name="dataTable_length" aria-controls="dataTable" class="custom-select custom-select-sm form-control form-control-sm">
+                                              <option value="5">5</option><option value="25">25</option><option value="50">50</option><option value="100">100</option>
+                                              </select> 
+                                          </label>
+                                        </div>
+                                            <table className="table table-bordered" id="dataTable" width="100%" cellspacing="0">
+                                                <thead>
+                                                    <tr>
+                                                        <th>Username</th>
+                                                        <th>Name</th>
+                                                        <th>Role</th>
+                                                        <th>Status</th>
+                                                        <th>Action</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                {users.map((user) => (
+                                                  <tr key={user._id}>
+                                                    <td>{user.username}</td>
+                                                    <td>{user.name}</td>
+                                                    <td>{user.role}</td>
+                                                    <td>
+                                                      {user.suspendUntil && user.suspendUntil > new Date() ? (
+                                                        `Suspended Until: ${new Date(user.suspendUntil).toLocaleString()}`
+                                                      ) : (
+                                                        "Active"
+                                                      )}
+                                                      </td>
+                                                    <td>
+                                                      <button onClick={() => handleSuspend(user._id, '1h')}>Suspend 1 Hour</button>
+                                                      <button onClick={() => handleSuspend(user._id, '3h')}>Suspend 3 Hours</button>
+                                                      <button onClick={() => handleSuspend(user._id, '6h')}>Suspend 6 Hours</button>
+                                                      <button onClick={() => handleSuspend(user._id, '12h')}>Suspend 12 Hours</button>
+                                                      <button onClick={() => handleSuspend(user._id, '1d')}>Suspend 1 Day</button>
+                                                      <button onClick={() => handleSuspend(user._id, '2d')}>Suspend 2 Days</button>
+                                                      <button onClick={() => handleSuspend(user._id, '3d')}>Suspend 3 Days</button>
+                                                      <button onClick={() => handleUnsuspend(user._id)}>Unsuspend</button>
+                                                      <button onClick={() => handleDelete(user._id)} style={{ color: 'red' }}>
+                                                        Delete User
+                                                      </button>
+                                                    </td>
+                                                  </tr>
+                                                ))} 
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+            </div>
+        </body>
     </div>
   );
 };

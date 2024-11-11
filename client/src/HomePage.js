@@ -53,6 +53,22 @@ function HomePage() {
           </>
         )}
       </div>
+      <div class="next-film">
+            <upnext>All Movie</upnext>
+            <ul class='movie-list'>
+              {movies.map((movie, index) => (
+              <li key={index} class= 'movie-item'>
+                <div class="item">
+                <img src={movie.image} alt={movie.title} className="styled-image-preview"/>
+                <Link to={`/movie/${encodeURIComponent(movie.title)}`}>
+                  <div class="play-mtitle">{movie.title}
+                  </div>
+                </Link>
+                </div>
+              </li>
+            ))}
+            </ul>
+        </div>
     </div>
   );
 }

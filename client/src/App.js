@@ -35,6 +35,7 @@ function App() {
 
         {/* Route untuk CMS dengan layout khusus untuk admin */}
         <Route path="/admin" element={<CMSLayout />}>
+        <Route path="" element={<Dashboard />} />
           <Route path="dashboard" element={<Dashboard />} />
           <Route path="movies" element={<ManageMovies />} />
           <Route path="requests" element={<ManageRequests />} />
