@@ -139,6 +139,18 @@ const authenticateAdmin = (req, res, next) => {
   next();
 };
 
+// Endpoint untuk mendapatkan semua movie requests milik pengguna yang sedang login
+app.get('/api/user/movie-requests', authenticateToken, async (req, res) => {
+  try {
+    // Cari semua movie requests berdasarkan userId
+    const movieRequests = await MovieRequest.find({ userId: req.user.userId });
+    res.json(movieRequests);
+  } catch (error) {
+    console.error('Error fetching user movie requests:', error);
+    res.status(500).json({ message: 'Failed to fetch movie requests', error });
+  }
+});
+
 // Endpoint untuk admin melihat semua request movie dengan status 'pending'
 app.post('/api/movie-requests', authenticateToken, async (req, res) => {
   const { title, description, genre, year } = req.body;
