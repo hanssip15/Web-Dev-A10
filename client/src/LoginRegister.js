@@ -15,14 +15,34 @@ const LoginRegister = () => {
   // Fungsi untuk mengirim data registrasi ke backend
   const handleRegisterSubmit = async (e) => {
     e.preventDefault();
+  
+    // Validasi username tidak kosong
+    if (!username) {
+      setError('Username tidak boleh kosong.');
+      return;
+    }
+  
+    // Validasi password
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      setError('Password harus mengandung minimal 8 karakter, termasuk huruf besar, huruf kecil, dan angka.');
+      return;
+    }
+  
     try {
       await axios.post('/api/register', { name, username, password });
       setSuccessMessage('Registrasi berhasil! Silakan login.');
       setIsRegistering(false);
+      setError(''); // Reset error jika berhasil
     } catch (error) {
-      setError('Gagal registrasi. Username mungkin sudah digunakan.');
+      if (error.response && error.response.status === 400) {
+        setError(error.response.data.message);
+      } else {
+        setError('Gagal registrasi. Coba lagi nanti.');
+      }
     }
   };
+  
 
   // Fungsi untuk mengirim data login ke backend
   const handleLoginSubmit = async (e) => {

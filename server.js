@@ -156,20 +156,30 @@ app.post('/api/movie-requests', authenticateToken, async (req, res) => {
   const { title, description, genre, year } = req.body;
 
   try {
+    const currentYear = new Date().getFullYear();
+    const firstMovieYear = 1888;
+
+    // Konversi year menjadi angka jika diperlukan
+    const yearInt = parseInt(year, 10);
+
+    if (isNaN(yearInt) || yearInt < firstMovieYear || yearInt > currentYear) {
+      return res.status(400).json({
+        message: `Release Year must be a valid integer between ${firstMovieYear} and ${currentYear}.`,
+      });
+    }
+
     const newRequest = new MovieRequest({
       title,
       description,
       genre,
-      year,
-      userId: req.user.userId // Mengambil userId dari token
+      year: yearInt, // Simpan year sebagai angka
+      userId: req.user.userId,
     });
 
-    // Menyimpan request ke database
     await newRequest.save();
-
     res.status(201).json({ message: 'Movie request submitted successfully!' });
   } catch (err) {
-    console.error('Failed to submit movie request:', err); // Log detail error
+    console.error('Failed to submit movie request:', err);
     res.status(500).json({ message: 'Failed to submit movie request', error: err });
   }
 });
@@ -319,27 +329,33 @@ app.post('/api/movies/rate', authenticateToken, async (req, res) => {
     const movie = await Movie.findOne({ title });
     if (!movie) return res.status(404).json({ message: 'Movie not found' });
 
-    // Buat review baru di koleksi `Review`
+    // Cek apakah user sudah memberikan review untuk film ini
+    const existingReview = await Review.findOne({ movieId: movie._id, userId: req.user.userId });
+    if (existingReview) {
+      return res.status(400).json({ message: 'You have already submitted a review for this movie.' });
+    }
+
+    // Buat review baru
     const review = new Review({
       movieId: movie._id,
       userId: req.user.userId,
-      rating: rating,
-      reviewText: reviewText
+      rating,
+      reviewText
     });
     await review.save();
 
     // Hitung ulang rata-rata rating
     const reviews = await Review.find({ movieId: movie._id });
     const totalRating = reviews.reduce((sum, review) => sum + review.rating, 0);
-    const averageRating = (totalRating / reviews.length).toFixed(1); // Menghitung rata-rata dan membatasi 1 desimal
+    const averageRating = (totalRating / reviews.length).toFixed(1);
 
-    // Update `averageRating` di dokumen `Movie`
-    movie.averageRating = parseFloat(averageRating); // Mengubah string menjadi float
+    // Update rating rata-rata di film
+    movie.averageRating = parseFloat(averageRating);
     await movie.save();
 
     res.json({ success: true, message: 'Review added successfully!' });
   } catch (err) {
-    console.error("Error in adding review:", err);
+    console.error('Error in adding review:', err);
     res.status(500).json({ message: 'Failed to add review', error: err });
   }
 });
@@ -354,12 +370,13 @@ app.get('/api/countries', async (req, res) => {
   }
 });
 
-// Endpoint untuk mendapatkan semua genres
+// Endpoint untuk mendapatkan semua genre
 app.get('/api/genres', async (req, res) => {
   try {
-    const genres = await Genre.find();
+    const genres = await Genre.find(); // Mengambil semua genre dari database
     res.json(genres);
   } catch (err) {
+    console.error('Error fetching genres:', err);
     res.status(500).json({ message: 'Error fetching genres', error: err });
   }
 });
@@ -374,10 +391,25 @@ app.get('/api/actors', authenticateToken, authenticateAdmin, async (req, res) =>
   }
 });
 
+// Endpoint registrasi dengan validasi
 app.post('/api/register', async (req, res) => {
   const { name, username, password } = req.body;
 
   try {
+    // Validasi username: cek jika sudah ada di database
+    const existingUser = await User.findOne({ username });
+    if (existingUser) {
+      return res.status(400).json({ message: 'Username sudah digunakan. Silakan gunakan username lain.' });
+    }
+
+    // Validasi password
+    const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
+    if (!passwordRegex.test(password)) {
+      return res.status(400).json({
+        message: 'Password harus mengandung minimal 8 karakter, termasuk huruf besar, huruf kecil, dan angka.',
+      });
+    }
+
     // Enkripsi password menggunakan bcrypt
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -387,8 +419,8 @@ app.post('/api/register', async (req, res) => {
 
     res.status(201).json({ message: 'User registered successfully!' });
   } catch (err) {
-    console.error("Error in register:", err);
-    res.status(400).json({ message: 'Failed to register user', error: err });
+    console.error('Error in register:', err);
+    res.status(500).json({ message: 'Failed to register user', error: err });
   }
 });
 
@@ -665,7 +697,7 @@ app.delete('/api/admin/awards/:id', authenticateToken, authenticateAdmin, async 
   }
 });
 
-// ** Jalankan server **
+// Jalankan server
 app.listen(port, () => {
   console.log(`Server is running on port ${port}`);
 });
